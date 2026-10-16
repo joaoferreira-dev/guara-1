@@ -1,0 +1,3 @@
+# Ambiente inicial: Python 3.9.13.
+# Nenhuma dependência externa nesta etapa; usar a biblioteca padrão.
+# Adicionar aqui dependências necessárias quando a aplicação evoluir.

@@ -1,0 +1,380 @@
+{
+  "started_at": "2026-10-16T18:33:22.135192-03:00",
+  "python": "3.9.13",
+  "ollama": {
+    "version": "0.40.5"
+  },
+  "models": {
+    "models": [
+      {
+        "name": "qwen3:1.7b",
+        "model": "qwen3:1.7b",
+        "modified_at": "2026-10-16T15:08:11.5928146-03:00",
+        "size": 1359293444,
+        "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "2.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 40960,
+          "embedding_length": 2048,
+          "runner": "ggml"
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "initial_running_models": {
+    "models": []
+  },
+  "settings": {
+    "think": false,
+    "num_ctx": 2048,
+    "num_predict": 256,
+    "temperature": 0,
+    "seed": 42
+  },
+  "tests": [
+    {
+      "name": "conversa",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Responda em português brasileiro, em até duas frases: estou começando a aprender Python. Por onde começo?"
+        }
+      ],
+      "wall_seconds": 7.7642412,
+      "memory_before": {
+        "total_bytes": 15869370368,
+        "available_bytes": 2553843712,
+        "used_bytes": 13315526656
+      },
+      "memory_after": {
+        "total_bytes": 15869370368,
+        "available_bytes": 965042176,
+        "used_bytes": 14904328192
+      },
+      "system_used_peak_bytes": 14917001216,
+      "memory_samples": 32,
+      "running_models_after": {
+        "models": [
+          {
+            "name": "qwen3:1.7b",
+            "model": "qwen3:1.7b",
+            "size": 1649651219,
+            "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen3",
+              "families": [
+                "qwen3"
+              ],
+              "parameter_size": "2.0B",
+              "quantization_level": "Q4_K_M"
+            },
+            "expires_at": "2026-10-16T18:43:36.0558449-03:00",
+            "size_vram": 0,
+            "context_length": 2048,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "response": {
+        "model": "qwen3:1.7b",
+        "created_at": "2026-10-16T21:33:36.0558449Z",
+        "message": {
+          "role": "assistant",
+          "content": "Você pode começar com o curso básico de Python, como o que está disponível no [Python.org](https://www.python.org/). Também pode usar um editor de código como o Visual Studio Code ou o PyCharm para praticar."
+        },
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 5720819700,
+        "load_duration": 2819822900,
+        "prompt_eval_count": 45,
+        "prompt_eval_cached_count": 0,
+        "prompt_eval_duration": 327552000,
+        "eval_count": 49,
+        "eval_duration": 2564607000
+      }
+    },
+    {
+      "name": "continuidade",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Responda em português brasileiro, em até duas frases: estou começando a aprender Python. Por onde começo?"
+        },
+        {
+          "role": "assistant",
+          "content": "Você pode começar com o curso básico de Python, como o que está disponível no [Python.org](https://www.python.org/). Também pode usar um editor de código como o Visual Studio Code ou o PyCharm para praticar."
+        },
+        {
+          "role": "user",
+          "content": "Qual foi a linguagem que eu disse que estou começando a aprender? Responda apenas com o nome."
+        }
+      ],
+      "wall_seconds": 2.765837900000001,
+      "memory_before": {
+        "total_bytes": 15869370368,
+        "available_bytes": 1011200000,
+        "used_bytes": 14858170368
+      },
+      "memory_after": {
+        "total_bytes": 15869370368,
+        "available_bytes": 976089088,
+        "used_bytes": 14893281280
+      },
+      "system_used_peak_bytes": 14893281280,
+      "memory_samples": 12,
+      "running_models_after": {
+        "models": [
+          {
+            "name": "qwen3:1.7b",
+            "model": "qwen3:1.7b",
+            "size": 1649651219,
+            "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen3",
+              "families": [
+                "qwen3"
+              ],
+              "parameter_size": "2.0B",
+              "quantization_level": "Q4_K_M"
+            },
+            "expires_at": "2026-10-16T18:43:40.886252-03:00",
+            "size_vram": 0,
+            "context_length": 2048,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "response": {
+        "model": "qwen3:1.7b",
+        "created_at": "2026-10-16T21:33:40.8857438Z",
+        "message": {
+          "role": "assistant",
+          "content": "Python"
+        },
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 702606700,
+        "load_duration": 6449500,
+        "prompt_eval_count": 127,
+        "prompt_eval_cached_count": 32,
+        "prompt_eval_duration": 621445000,
+        "eval_count": 2,
+        "eval_duration": 67065000
+      }
+    },
+    {
+      "name": "problema",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Uma loja vende 3 cadernos por R$ 18 cada. Aplica 10% de desconto no total e depois cobra R$ 8 de frete. Qual é o valor final? Mostre a conta em até três linhas."
+        }
+      ],
+      "wall_seconds": 11.760191200000005,
+      "memory_before": {
+        "total_bytes": 15869370368,
+        "available_bytes": 958820352,
+        "used_bytes": 14910550016
+      },
+      "memory_after": {
+        "total_bytes": 15869370368,
+        "available_bytes": 987602944,
+        "used_bytes": 14881767424
+      },
+      "system_used_peak_bytes": 15072276480,
+      "memory_samples": 48,
+      "running_models_after": {
+        "models": [
+          {
+            "name": "qwen3:1.7b",
+            "model": "qwen3:1.7b",
+            "size": 1649651219,
+            "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen3",
+              "families": [
+                "qwen3"
+              ],
+              "parameter_size": "2.0B",
+              "quantization_level": "Q4_K_M"
+            },
+            "expires_at": "2026-10-16T18:43:54.7067422-03:00",
+            "size_vram": 0,
+            "context_length": 2048,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "response": {
+        "model": "qwen3:1.7b",
+        "created_at": "2026-10-16T21:33:54.7067422Z",
+        "message": {
+          "role": "assistant",
+          "content": "**Passo 1: Calcular o preço total sem desconto**  \n3 cadernos × R$ 18 = R$ 54\n\n**Passo 2: Aplicar o desconto de 10%**  \n10% de R$ 54 = 0,10 × 54 = R$ 5,40  \nPreço com desconto = R$ 54 − R$ 5,40 = R$ 48,60\n\n**Passo 3: Adicionar o frete de R$ 8**  \nValor final = R$ 48,60 + R$ 8 = R$ 56,60\n\n**Valor final: R$ 56,60**"
+        },
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 9688018300,
+        "load_duration": 9167900,
+        "prompt_eval_count": 74,
+        "prompt_eval_cached_count": 3,
+        "prompt_eval_duration": 427784000,
+        "eval_count": 167,
+        "eval_duration": 9243211000
+      }
+    },
+    {
+      "name": "codigo",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Escreva apenas um bloco de código Python com uma função chamada soma_pares(numeros) que retorna a soma dos números pares de uma lista de inteiros. Deve funcionar com lista vazia e números negativos. Não use bibliotecas, entrada de usuário ou acesso a arquivos."
+        }
+      ],
+      "wall_seconds": 4.307329599999996,
+      "memory_before": {
+        "total_bytes": 15869370368,
+        "available_bytes": 990834688,
+        "used_bytes": 14878535680
+      },
+      "memory_after": {
+        "total_bytes": 15869370368,
+        "available_bytes": 897347584,
+        "used_bytes": 14972022784
+      },
+      "system_used_peak_bytes": 14974541824,
+      "memory_samples": 18,
+      "running_models_after": {
+        "models": [
+          {
+            "name": "qwen3:1.7b",
+            "model": "qwen3:1.7b",
+            "size": 1649651219,
+            "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen3",
+              "families": [
+                "qwen3"
+              ],
+              "parameter_size": "2.0B",
+              "quantization_level": "Q4_K_M"
+            },
+            "expires_at": "2026-10-16T18:44:01.0633776-03:00",
+            "size_vram": 0,
+            "context_length": 2048,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "response": {
+        "model": "qwen3:1.7b",
+        "created_at": "2026-10-16T21:34:01.0628693Z",
+        "message": {
+          "role": "assistant",
+          "content": "```python\ndef soma_pares(numeros):\n    return sum(num for num in numeros if num % 2 == 0)\n```"
+        },
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 2271168900,
+        "load_duration": 4706000,
+        "prompt_eval_count": 82,
+        "prompt_eval_cached_count": 3,
+        "prompt_eval_duration": 556579000,
+        "eval_count": 30,
+        "eval_duration": 1697474000
+      }
+    }
+  ],
+  "finished_at": "2026-10-16T18:34:03.114252-03:00",
+  "review": {
+    "conversation": "Português brasileiro; duas frases; aprovado no critério linguístico, sem verificação das recomendações externas.",
+    "continuity": "Resposta Python; aprovado.",
+    "math": {
+      "expected": 56.6,
+      "actual": 56.6,
+      "correct_result": true,
+      "format_passed": false,
+      "note": "Excedeu o limite de três linhas solicitado."
+    },
+    "code": {
+      "reviewed_before_execution": true,
+      "checks": [
+        {
+          "input": [],
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "input": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "expected": 6,
+          "actual": 6
+        },
+        {
+          "input": [
+            -4,
+            -3,
+            -2,
+            1
+          ],
+          "expected": -6,
+          "actual": -6
+        },
+        {
+          "input": [
+            0
+          ],
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "input": [
+            1,
+            3,
+            5
+          ],
+          "expected": 0,
+          "actual": 0
+        },
+        {
+          "input": [
+            2,
+            2,
+            4
+          ],
+          "expected": 8,
+          "actual": 8
+        }
+      ],
+      "passed": true
+    },
+    "latency_criterion": {
+      "seconds": 30,
+      "status": "provisório; escolha do agente, aguardando preferência pessoal"
+    }
+  }
+}

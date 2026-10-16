@@ -1,0 +1,30 @@
+# Ambientes e cache do Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Configuração privada e credenciais
+.env
+.env.*
+!.env.example
+/.aws/
+/credentials/
+/secrets/
+*.pem
+*.key
+
+# Pesos locais dos modelos
+/models/
+/modelos/
+*.gguf
+*.safetensors
+
+# Resultados de execução e conversas pessoais
+/resultados/
+/historico/
+/conversas/
+*.log

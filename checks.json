@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "status": "estrutura inicial; casos ainda não preparados",
+  "planned_total": 20,
+  "groups": [
+    {"id": "pt_br", "description": "Conversa e instruções em português brasileiro", "planned_count": 5, "cases": []},
+    {"id": "problemas", "description": "Problemas com respostas conhecidas", "planned_count": 5, "cases": []},
+    {"id": "codigo", "description": "Exercícios pequenos de código", "planned_count": 5, "cases": []},
+    {"id": "ferramentas", "description": "Chamadas reais, argumentos inválidos e limites de leitura", "planned_count": 5, "cases": []}
+  ]
+}
