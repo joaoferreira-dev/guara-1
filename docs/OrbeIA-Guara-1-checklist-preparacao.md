@@ -104,20 +104,23 @@ Para reproduzir as medições, executar `py scripts/validar_qwen.py` na raiz do 
 
 ## 3. Preparar o repositório
 
-Estrutura local preparada em 16 de outubro de 2026. O Git foi inicializado na branch `main`; a conexão remota e o envio ainda não foram validados.
+Estrutura local preparada em 16 de outubro de 2026. O Git foi inicializado na branch `main`; a conexão remota e o primeiro envio foram validados na mesma data.
 
-- [ ] Verificar a conexão deste repositório com o GitHub e se o envio funciona.
+- [x] Verificar a conexão deste repositório com o GitHub e se o envio funciona.
 - [x] Preparar `.gitignore` para excluir `.venv`, `.env`, credenciais, pesos dos modelos e históricos pessoais.
 - [x] Preparar os arquivos previstos: `README.md`, `Modelfile`, `app.py`, `tools.py`, `checks.json` e `requirements.txt`.
 - [x] Registrar a origem Qwen3, a versão utilizada e sua licença em [modelo-base.md](modelo-base.md).
 - [x] Documentar a regra de incluir em cada commit o trailer exigido, em sua própria linha final: `Co-authored-by: codex <codex@openai.com>`.
 - [x] Criar `AGENTS.md` com contexto, escopo, organização, comandos, critérios de verificação e regras de versionamento.
 - [x] Preparar `.gitmessage` com o trailer obrigatório.
-- [ ] Ativar o template local com `git config --local commit.template .gitmessage`.
+- [x] Ativar o template local com `git config --local commit.template .gitmessage`.
+- [x] Adicionar `.github/CODEOWNERS` com `* @joaoferreira-dev`.
 
 Verificações locais: o ponto de entrada `app.py` executou no `.venv`; `git check-ignore` confirmou a exclusão de ambiente, `.env`, credenciais, pesos, resultados e histórico. `app.py` apenas informa o estado inicial; o registro de ferramentas está vazio e os 20 casos ainda serão escritos. O `Modelfile` contém instruções iniciais, mas a criação e o teste de `guara1` permanecem na seção 4.
 
-O remoto `origin` foi configurado em 16 de outubro de 2026 com a URL informada pelo responsável: `https://github.com/joaoferreira-dev/guara-1.git`. As URLs de busca e envio foram conferidas com `git remote -v`; a conexão e o envio ainda não foram validados. Na verificação anterior, o GitHub CLI encontrou a conta local, mas reportou sua credencial como inválida. A tentativa anterior de configurar o template foi impedida por falta de permissão de escrita em `.git/config`. Nenhum commit ou envio foi realizado. O arquivo `.gitmessage` está pronto para ativação.
+O remoto `origin` foi configurado em 16 de outubro de 2026 com a URL informada pelo responsável: `https://github.com/joaoferreira-dev/guara-1.git`. As URLs de busca e envio foram conferidas com `git remote -v`. Na revisão para o primeiro push, `git ls-remote origin` confirmou o acesso e o remoto vazio; o GitHub CLI confirmou o repositório público. O commit inicial `f61efd4` foi enviado com `git push -u origin main`, configurando o acompanhamento de `origin/main`. O template local `.gitmessage` foi ativado. As limitações de credencial e permissão registradas na verificação anterior foram superadas nesta execução autorizada.
+
+Revisão anterior ao envio: `app.py` executou no `.venv`, os três arquivos Python passaram em `compileall`, os dois JSONs foram carregados com sucesso e `git diff --cached --check` não encontrou problemas. As exclusões de ambiente, credenciais, pesos, resultados e conversas foram conferidas; a busca por padrões comuns de credenciais não encontrou ocorrências nos arquivos revisados. A referência de benchmark foi preservada, sem repetir as chamadas ao modelo. A estrutura está apta ao versionamento inicial; a aplicação e a avaliação completa continuam pendentes.
 
 O fluxo previsto é editar no ThinkPad, testar localmente, fazer commit e enviar ao GitHub. CI/CD não é requisito desta etapa.
 

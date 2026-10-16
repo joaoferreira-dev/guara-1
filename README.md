@@ -92,7 +92,7 @@ git config --local commit.template .gitmessage
 
 Todo commit deve terminar com `Co-authored-by: codex <codex@openai.com>`. O template não substitui a inclusão desse trailer ao usar `git commit -m`.
 
-O Git local foi inicializado em `main`. O remoto `origin` está configurado como `https://github.com/joaoferreira-dev/guara-1.git`. A conexão e o envio ainda precisam ser validados com uma credencial válida. Não há CI/CD neste MVP.
+O Git local foi inicializado em `main`. O remoto `origin` está configurado como `https://github.com/joaoferreira-dev/guara-1.git`. O primeiro push foi concluído em 16 de outubro de 2026, com `main` acompanhando `origin/main`. O template local de commit está ativo e `.github/CODEOWNERS` define `@joaoferreira-dev` como responsável por todos os arquivos. Não há CI/CD neste MVP.
 
 ## Documentação
 
