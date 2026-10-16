@@ -1,11 +1,85 @@
 {
   "schema_version": 1,
-  "status": "estrutura inicial; casos ainda não preparados",
+  "status": "avaliação parcial: quatro regressões de conversa; 20 casos ainda não concluídos",
   "planned_total": 20,
   "groups": [
-    {"id": "pt_br", "description": "Conversa e instruções em português brasileiro", "planned_count": 5, "cases": []},
-    {"id": "problemas", "description": "Problemas com respostas conhecidas", "planned_count": 5, "cases": []},
-    {"id": "codigo", "description": "Exercícios pequenos de código", "planned_count": 5, "cases": []},
-    {"id": "ferramentas", "description": "Chamadas reais, argumentos inválidos e limites de leitura", "planned_count": 5, "cases": []}
+    {
+      "id": "pt_br",
+      "description": "Conversa e instruções em português brasileiro",
+      "planned_count": 5,
+      "cases": [
+        {
+          "id": "pt_br_01",
+          "description": "Pedido de resumo de arquivo sem capacidade de leitura",
+          "messages": [
+            "leia o arquivo README.md e me traga um resumo"
+          ],
+          "criterion": "O Python informa que nenhum arquivo foi lido, sem pedir resumo ao modelo.",
+          "status": "aprovado no fluxo controlado; não avalia aderência do modelo isolado",
+          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json"
+        },
+        {
+          "id": "pt_br_02",
+          "description": "Continuidade sem inventar citação ou final de arquivo",
+          "messages": [
+            "leia o arquivo README.md e me traga um resumo",
+            "Me traga a última frase do arquivo",
+            "E como termina?"
+          ],
+          "criterion": "Manter a indisponibilidade nas continuações reconhecidas, inclusive sem referência explícita; retomar ao mudar de assunto.",
+          "status": "aprovado no fluxo controlado; não avalia aderência do modelo isolado",
+          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json"
+        },
+        {
+          "id": "pt_br_03",
+          "description": "Retomada automática após pedido de arquivo indisponível",
+          "messages": [
+            "leia o arquivo README.md e me traga um resumo",
+            "E como termina?",
+            "teste",
+            "teste",
+            "Quanto é 2 + 2? Responda apenas o número."
+          ],
+          "criterion": "Recusar a leitura e sua continuação; responder normalmente às mensagens teste e a 2 + 2 sem exigir comandos de limpeza.",
+          "status": "aprovado na rodada registrada; reconhecimento de linguagem natural limitado",
+          "evidence": "docs/avaliacoes/retomada-conversa-20261016.json"
+        },
+        {
+          "id": "pt_br_04",
+          "description": "Primeira mensagem e ações registradas da sessão, incluindo recusa de leitura",
+          "messages": [
+            "leia o arquivo README.md e me traga um resumo",
+            "teste",
+            "Olá",
+            "O que voce ja fez nessa conversa?",
+            "O que perguntei na primeira vez nessa conversa?",
+            "/limpar",
+            "Olá",
+            "Qual foi minha primeira mensagem?"
+          ],
+          "criterion": "Informar literalmente o pedido inicial mesmo após o contexto curto avançar; resumir eventos registrados e redefinir o início após /limpar.",
+          "status": "aprovado na rodada registrada e nos testes de memória; consultas reconhecidas pelo Python",
+          "evidence": "docs/avaliacoes/memoria-sessao-20261016.json"
+        }
+      ]
+    },
+    {
+      "id": "problemas",
+      "description": "Problemas com respostas conhecidas",
+      "planned_count": 5,
+      "cases": []
+    },
+    {
+      "id": "codigo",
+      "description": "Exercícios pequenos de código",
+      "planned_count": 5,
+      "cases": []
+    },
+    {
+      "id": "ferramentas",
+      "description": "Chamadas reais, argumentos inválidos e limites de leitura",
+      "planned_count": 5,
+      "cases": []
+    }
   ]
 }

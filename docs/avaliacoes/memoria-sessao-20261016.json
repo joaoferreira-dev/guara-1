@@ -1,0 +1,24 @@
+{
+  "executed_at": "2026-10-16T20:03:02.807335-03:00",
+  "prompts": [
+    "leia o arquivo README.md e me traga um resumo",
+    "teste",
+    "Olá",
+    "O que voce ja fez nessa conversa?",
+    "O que perguntei na primeira vez nessa conversa?",
+    "/limpar",
+    "Olá",
+    "Qual foi minha primeira mensagem?",
+    "/sair"
+  ],
+  "wall_seconds": 13.339072499999999,
+  "returncode": 0,
+  "stdout": "Guará 1 — OrbeIA\nConversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.\nHistórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Podemos continuar conversando sobre outro assunto.\n\nVocê: \nGuará 1: Teste realizado. A conversa está funcionando.\n\nVocê: \nGuará 1: Olá! Como posso ajudar você hoje?\n\nVocê: \nGuará 1: Até sua mensagem anterior, o registro desta sessão contém: 2 resposta(s) do modelo, 1 pedido(s) de arquivo recusado(s), 0 resposta(s) local(is) sobre a sessão e 0 falha(s) de integração. Nenhum arquivo foi lido e nenhuma ferramenta foi executada.\n\nVocê: \nGuará 1: Sua primeira mensagem nesta sessão foi: \"leia o arquivo README.md e me traga um resumo\"\n\nVocê: Histórico da sessão limpo. Conversa retomada.\n\nVocê: \nGuará 1: Olá! Como posso ajudar você hoje?\n\nVocê: \nGuará 1: Sua primeira mensagem nesta sessão foi: \"Olá\"\n\nVocê: \nAté mais!\n",
+  "stderr": "",
+  "review": {
+    "result": "Primeiro pedido de leitura preservado como primeira mensagem; resumo factual com duas respostas do modelo e uma recusa; após /limpar, a primeira mensagem passou a ser Olá.",
+    "model_behavior": "Teste e saudação responderam normalmente. As perguntas reconhecidas sobre a sessão foram respondidas pelo Python, sem geração de conteúdo pelo modelo.",
+    "automated_checks": "26 testes de integração e memória passaram, incluindo início preservado após dez turnos, reset, origem dos avisos e manutenção de mensagens legítimas que mencionam arquivos.",
+    "limits": "Memória em RAM: primeira mensagem e contadores, além do contexto curto. Não armazena transcrição completa nem oferece recuperação de qualquer turno antigo. As consultas reconhecidas são limitadas. Os 20 casos completos do MVP continuam pendentes."
+  }
+}

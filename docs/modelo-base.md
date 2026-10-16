@@ -30,4 +30,4 @@ A licença do código próprio do projeto ainda não foi definida. Não confundi
 
 ## Limites desta etapa
 
-Não houve fine-tuning, LoRA, QLoRA ou treinamento do zero. A variante 4B só será considerada após medir qualidade, velocidade e memória. A configuração chamada `guara1` é derivada do `Modelfile`; sua criação e teste ainda fazem parte da próxima etapa de validação.
+Não houve fine-tuning, LoRA, QLoRA ou treinamento do zero. A variante 4B só será considerada após medir qualidade, velocidade e memória. A configuração chamada `guara1` é derivada do `Modelfile`; sua criação e teste com `--think=false` foram validados em 16 de outubro de 2026. O Python envia `think: false` explicitamente, conforme decisão do responsável após a comparação local.

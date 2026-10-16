@@ -1,5 +1,6 @@
 """Medição local da seção 2; usa apenas a biblioteca padrão do Python."""
 
+import argparse
 import ctypes
 import json
 import platform
@@ -36,6 +37,10 @@ def api(route, payload=None):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--think", action="store_true",
+                        help="Ativar raciocínio, mantendo os demais parâmetros da referência.")
+    args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     output_dir = Path(__file__).resolve().parents[1] / "resultados" / "benchmarks"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -45,7 +50,7 @@ def main():
     report = {"started_at": datetime.now().astimezone().isoformat(),
               "python": platform.python_version(), "ollama": api("version"),
               "models": api("tags"), "initial_running_models": api("ps"),
-              "settings": {"think": False, "num_ctx": 2048, "num_predict": 256,
+              "settings": {"think": args.think, "num_ctx": 2048, "num_predict": 256,
                            "temperature": 0, "seed": 42}, "tests": []}
     prompts = [
         ("conversa", "Responda em português brasileiro, em até duas frases: estou começando a aprender Python. Por onde começo?"),
@@ -69,7 +74,7 @@ def main():
         started = time.perf_counter()
         try:
             result = api("chat", {"model": "qwen3:1.7b", "messages": messages,
-                                  "stream": False, "think": False, "keep_alive": "10m",
+                                  "stream": False, "think": args.think, "keep_alive": "10m",
                                   "options": {k: v for k, v in report["settings"].items() if k != "think"}})
         finally:
             elapsed = time.perf_counter() - started

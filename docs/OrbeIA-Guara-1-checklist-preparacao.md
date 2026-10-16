@@ -102,6 +102,12 @@ O aumento observado de aproximadamente 1,64 GiB na memória total do sistema inc
 
 Para reproduzir as medições, executar `py scripts/validar_qwen.py` na raiz do projeto com o Ollama ativo. O script usa apenas a biblioteca padrão e cria um JSON com data e hora em `resultados/benchmarks/`, pasta ignorada pelo Git. A referência inicial em `docs/benchmarks/` permanece preservada. O script registra se havia um modelo carregado inicialmente; repetir com modelo já carregado não representa partida a frio. A revisão dos resultados e os seis casos de código registrados na referência inicial foram feitos separadamente após a geração e precisam ser refeitos para cada nova referência. As orientações para selecionar e versionar novas medições estão em [docs/benchmarks](benchmarks/README.md).
 
+### Comparação com raciocínio ativado
+
+Em 16 de outubro de 2026, entre 19:07 e 19:09 (America/Sao_Paulo), os quatro pedidos foram repetidos com `think: true`, mantendo modelo, digest e demais parâmetros. Nenhum modelo estava carregado inicialmente. Tempos: conversa 14,26 s, continuidade 13,51 s, matemática 17,26 s e código 17,55 s. A continuidade acertou Python; a conversa excedeu duas frases. Matemática e código atingiram 256 tokens durante o raciocínio e não produziram resposta final. O raciocínio foi predominantemente em inglês, sem instrução específica para alterar seu idioma.
+
+O total passou de 26,60 s para 62,58 s. O pico de memória do sistema foi 13,34 GiB, partindo de 11,82 GiB em uso; a diferença de carga inicial impede atribuir o pico menor ao modo de raciocínio. Resultados e ressalvas estão na [comparação revisada](benchmarks/comparacao-think-20261016.md) e no [JSON da nova rodada](benchmarks/validacao-qwen-think-20261016.json). A referência inicial foi preservada. Após avaliar a comparação, o responsável aprovou manter `think: false` com o orçamento atual, conforme seção 4; orçamento maior e instrução de idioma não foram testados.
+
 ## 3. Preparar o repositório
 
 Estrutura local preparada em 16 de outubro de 2026. O Git foi inicializado na branch `main`; a conexão remota e o primeiro envio foram validados na mesma data.
@@ -116,7 +122,7 @@ Estrutura local preparada em 16 de outubro de 2026. O Git foi inicializado na br
 - [x] Ativar o template local com `git config --local commit.template .gitmessage`.
 - [x] Adicionar `.github/CODEOWNERS` com `* @joaoferreira-dev`.
 
-Verificações locais: o ponto de entrada `app.py` executou no `.venv`; `git check-ignore` confirmou a exclusão de ambiente, `.env`, credenciais, pesos, resultados e histórico. `app.py` apenas informa o estado inicial; o registro de ferramentas está vazio e os 20 casos ainda serão escritos. O `Modelfile` contém instruções iniciais, mas a criação e o teste de `guara1` permanecem na seção 4.
+Verificações na preparação inicial: o ponto de entrada `app.py` executou no `.venv`; `git check-ignore` confirmou a exclusão de ambiente, `.env`, credenciais, pesos, resultados e histórico. Naquele momento, `app.py` apenas informava o estado inicial. A implementação posterior da conversa e a validação de `guara1` estão registradas na seção 4; o registro de ferramentas permanece vazio e os 20 casos ainda serão escritos.
 
 O remoto `origin` foi configurado em 16 de outubro de 2026 com a URL informada pelo responsável: `https://github.com/joaoferreira-dev/guara-1.git`. As URLs de busca e envio foram conferidas com `git remote -v`. Na revisão para o primeiro push, `git ls-remote origin` confirmou o acesso e o remoto vazio; o GitHub CLI confirmou o repositório público. O commit inicial `f61efd4` foi enviado com `git push -u origin main`, configurando o acompanhamento de `origin/main`. O template local `.gitmessage` foi ativado. As limitações de credencial e permissão registradas na verificação anterior foram superadas nesta execução autorizada.
 
@@ -126,19 +132,49 @@ O fluxo previsto é editar no ThinkPad, testar localmente, fazer commit e enviar
 
 ## 4. Fechar as decisões mínimas da aplicação
 
-Estes parâmetros precisam ser escolhidos antes ou no início da implementação.
+Decisões iniciais definidas e conversa mínima implementada em 16 de outubro de 2026. O responsável aprovou `think: false` após comparar as duas rodadas.
 
-- [ ] Escrever as instruções do Guará 1: identidade, português brasileiro, estilo de resposta e comportamento diante de incerteza.
-- [ ] Definir limites iniciais de contexto, histórico e tamanho das respostas.
-- [ ] Escolher como tratar o modo de raciocínio do Qwen e medir seu impacto na velocidade.
-- [ ] Decidir se o histórico ficará apenas na sessão ou também em arquivo local.
-- [ ] Definir comandos simples para sair e limpar a conversa.
-- [ ] Definir o comportamento quando o Ollama estiver indisponível ou a chamada demorar demais.
-- [ ] Preparar o `Modelfile` com a base escolhida e as instruções do assistente.
-- [ ] Validar a criação com `ollama create guara1 -f Modelfile`.
-- [ ] Testar a configuração com `ollama run guara1`.
+- [x] Escrever as instruções do Guará 1: identidade, português brasileiro, estilo de resposta e comportamento diante de incerteza.
+- [x] Definir limites iniciais de contexto, histórico e tamanho das respostas.
+- [x] Escolher como tratar o modo de raciocínio do Qwen e medir seu impacto na velocidade.
+- [x] Decidir se o histórico ficará apenas na sessão ou também em arquivo local.
+- [x] Definir comandos simples para sair e limpar a conversa.
+- [x] Definir o comportamento quando o Ollama estiver indisponível ou a chamada demorar demais.
+- [x] Preparar o `Modelfile` com a base escolhida e as instruções do assistente.
+- [x] Validar a criação com `ollama create guara1 -f Modelfile`.
+- [x] Testar a configuração com `ollama run guara1 --think=false`.
+
+Implementação: `app.py` chama `/api/chat` com `think: false`, contexto de 2.048 tokens, até 256 tokens gerados, temperatura 0 e seed 42. Aceita entradas de até 1.000 caracteres e guarda no máximo três pares de conversa em memória. O histórico e o pedido enviado respeitam 2.400 caracteres, removendo pares antigos completos; isso não substitui uma contagem exata de tokens. O cliente limita a resposta HTTP a 64 KiB e o texto final a 4.000 caracteres. Os comandos são `/limpar` e `/sair`; EOF e Ctrl+C encerram a sessão.
+
+O timeout de conexão e leitura é de 30 segundos, sem garantir um prazo absoluto para a operação inteira ou cancelamento da geração no servidor. Erros HTTP, modelo ausente, indisponibilidade, timeout e respostas inválidas geram orientação e entram no histórico como falhas da aplicação. Mensagens encaminhadas ao modelo fazem uma chamada, sem ferramentas nem repetição automática; recusas e consultas locais sobre a sessão não fazem chamadas. `keep_alive` é de dois minutos.
+
+Verificação: nove testes com respostas simuladas passaram, cobrindo o pedido sem raciocínio, histórico, comandos, entradas inválidas, limites, respostas inválidas e falhas de rede. O terminal foi executado com dois pedidos sintéticos, `/limpar` e `/sair`: respondeu em português, lembrou Python e encerrou sem erro. O registro local inicial está em `resultados/validacao-conversa.json`. A continuidade respondeu `Python.` (pontuação adicional ao nome pedido); trata-se de limitação de formato do modelo.
+
+No primeiro teste de apresentação pelo CLI, o modelo usou a expressão ambígua “treinado para ajudar”. As instruções foram reforçadas para explicitar a base Qwen3 e a ausência de treinamento pelo OrbeIA. Após recriar `guara1`, o mesmo teste retornou: “Sou Guará 1, assistente pessoal do projeto OrbeIA, baseado no Qwen3.” Isso confirma esse caso, sem garantir cumprimento de identidade em todos os pedidos. Os 20 casos completos continuam pendentes.
+
+Uma rodada intermediária mostrou apresentação indevida em resposta a um pedido sobre aprender Python. A regra de apresentação foi restringida a solicitações explícitas. Na configuração final, três pedidos pelo terminal, com `/limpar` antes da apresentação e `/sair` ao final, concluíram em 13,02 s no total: dica sobre Python, continuidade `Python.` e apresentação correta. A dica chamou `input()` de “biblioteca”, uma imprecisão técnica: é uma função embutida. Essas falhas são do conteúdo do modelo, sem erro de integração observado. O registro local final está em `resultados/validacao-conversa-20261016-191615.json`. O modelo foi descarregado após os testes. Este teste curto não valida conversas longas nem substitui a avaliação completa.
 
 Após editar o `Modelfile`, recriar a configuração no Ollama. Personalizar instruções e nome não modifica os pesos da base.
+
+### Correção de alegação de leitura sem evidência
+
+O responsável encontrou uma falha: ao pedir resumo de `README.md` e depois sua última frase, o modelo alegou acesso e inventou uma citação. A aplicação não tinha lido o arquivo. A orientação no `Modelfile` não foi suficiente, e a validação da resposta verificava somente estrutura, tamanho e falhas da API.
+
+A correção mantém a leitura indisponível e adiciona um fluxo controlado pelo Python em `capabilities.py`. `/arquivo` ou uma referência reconhecida a arquivos responde que nenhum arquivo foi lido. Continuações reconhecidas recebem a mesma orientação sem chamadas ao modelo. Ao mudar de assunto, a conversa retoma automaticamente. Os pedidos recusados agora entram no histórico curto, identificados como respostas da aplicação, conforme o ajuste de memória abaixo. `/conversar` e `/limpar` permitem limpar estado, histórico e fatos da sessão. A função `chat` rejeita pedidos de arquivo reconhecidos e continuações reconhecidas após uma recusa registrada pela aplicação. As instruções do Python e do `Modelfile` reforçam a ausência de acesso e a regra de que afirmações anteriores do assistente não comprovam leitura.
+
+O reconhecimento em linguagem natural é conservador, pode recusar perguntas legítimas sobre programação com arquivos e não cobre toda paráfrase possível. O modo explícito `/arquivo` possui comportamento definido; não se promete que o modelo deixe de inventar conteúdo em qualquer conversa livre ou no CLI isolado. A ferramenta futura precisará vincular conteúdo e citações a uma leitura real validada pelo Python, com pasta permitida. Nenhuma ferramenta foi habilitada nesta correção.
+
+Verificação inicial em 16 de outubro de 2026: o diálogo original e a continuação “E como termina?” receberam três recusas fixas, sem conteúdo inventado. Após `/conversar`, uma chamada real ao modelo respondeu `4` para `2 + 2`; o processo encerrou sem erro. O registro histórico está em [regressao-leitura-20261016.json](avaliacoes/regressao-leitura-20261016.json).
+
+O responsável observou depois que mensagens como `teste` ficavam presas no aviso de leitura. O estado foi ajustado para reconhecer continuações comuns e retomar automaticamente em outro assunto, preservando o contexto anterior. Na primeira rodada após esse ajuste, o modelo ainda repetiu limitações em resposta a `teste`, mesmo recebendo a mensagem pela API. A mensagem de sistema foi reduzida e passou a orientar explicitamente mudanças de assunto. Na rodada final, leitura e “E como termina?” receberam recusas; duas mensagens `teste` receberam confirmação normal, e `2 + 2` recebeu `4`, sem comandos intermediários, em 9,68 s no total. Evidência: [retomada-conversa-20261016.json](avaliacoes/retomada-conversa-20261016.json). `guara1` foi recriado com as instruções atualizadas. Os 20 testes de integração passaram, incluindo preservação de contexto e retorno automático; eles não substituem os 20 casos de avaliação do MVP. `checks.json` contém três regressões em PT-BR. A avaliação completa e as ferramentas seguem pendentes.
+
+### Memória factual da sessão
+
+O responsável encontrou outra falha: após leitura recusada, teste e saudação, o modelo inventou qual teria sido a primeira pergunta. O pedido recusado não estava registrado no histórico, e o filtro por palavras excluía pares legítimos que mencionassem arquivos. O contexto curto também não poderia preservar indefinidamente o início da conversa.
+
+O filtro por palavras foi removido. Todos os turnos válidos, incluindo recusas e falhas de integração, entram no contexto curto; respostas locais carregam origem explícita, serializada como aviso ou fato da aplicação, sem representar resultado de ferramenta. `session.py` mantém separadamente a primeira mensagem válida e contadores de respostas do modelo, recusas, respostas locais e falhas. Consultas reconhecidas sobre a primeira mensagem e as ações da sessão recebem respostas extraídas desses registros pelo Python. A primeira mensagem permanece disponível após o descarte dos pares antigos; não é armazenada uma transcrição completa. Comandos de controle e entradas inválidas não contam; `/arquivo` registra a tentativa recusada. `/limpar` e `/conversar` redefinem também esses fatos.
+
+Verificação em 16 de outubro de 2026: 26 testes passaram, incluindo preservação do início após dez turnos, origem dos avisos, manutenção de mensagens legítimas com referências a arquivos e reset. A sequência do responsável foi repetida pelo terminal, com Ollama real: leitura recusada, `teste`, `Olá`, resumo factual e primeira mensagem literal correta. Após `/limpar`, uma nova saudação passou a ser identificada como a primeira mensagem. O processo encerrou sem erro, em 13,34 s no total. Evidência revisada: [memoria-sessao-20261016.json](avaliacoes/memoria-sessao-20261016.json). `checks.json` contém quatro regressões em PT-BR; as demais tarefas e a avaliação completa continuam pendentes. As consultas reconhecidas são limitadas, e as demais respostas do modelo ainda exigem avaliação de conteúdo e idioma.
 
 ## 5. Especificar e testar as duas ferramentas
 

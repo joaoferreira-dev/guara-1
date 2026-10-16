@@ -1,0 +1,21 @@
+{
+  "executed_at": "2026-10-16T19:54:14.462126-03:00",
+  "prompts": [
+    "leia o arquivo README.md e me traga um resumo",
+    "E como termina?",
+    "teste",
+    "teste",
+    "Quanto é 2 + 2? Responda apenas o número.",
+    "/sair"
+  ],
+  "wall_seconds": 9.6774484,
+  "returncode": 0,
+  "stdout": "Guará 1 — OrbeIA\nConversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.\nHistórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Podemos continuar conversando sobre outro assunto.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Podemos continuar conversando sobre outro assunto.\n\nVocê: \nGuará 1: Confirmei que a conversa está funcionando.\n\nVocê: \nGuará 1: Confirmei que a conversa está funcionando.\n\nVocê: \nGuará 1: 4\n\nVocê: \nAté mais!\n",
+  "stderr": "",
+  "review": {
+    "result": "Recusa de leitura e continuação reconhecida; duas mensagens teste respondidas normalmente e 2 + 2 respondido como 4, sem /conversar ou /limpar.",
+    "intermediate_failure": "Na primeira rodada após liberar o estado, o modelo ainda repetiu avisos de arquivo em resposta a teste. A mensagem de sistema estava concentrada nas limitações; foi reduzida e passou a orientar mudanças de assunto.",
+    "history": "Testes automatizados confirmam preservação do contexto de conversa anterior e exclusão de pares com referências a arquivo antes de enviar o histórico ao modelo.",
+    "scope": "Reconhecimento de referências e continuações comuns; não garante interpretação universal. Ferramentas ainda indisponíveis. Os 20 testes de integração não substituem os 20 casos de avaliação do MVP."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "executed_at": "2026-10-16T19:48:06.574598-03:00",
+  "prompts": [
+    "leia o arquivo README.md e me traga um resumo",
+    "Me traga a última frase do arquivo",
+    "E como termina?",
+    "/conversar",
+    "Quanto é 2 + 2? Responda apenas o número.",
+    "/sair"
+  ],
+  "wall_seconds": 6.0068398,
+  "returncode": 0,
+  "stdout": "Guará 1 — OrbeIA\nConversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.\nHistórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Use /conversar ou /limpar para voltar à conversa.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Use /conversar ou /limpar para voltar à conversa.\n\nVocê: \nGuará 1: Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; não posso informar seu conteúdo, resumo ou última frase. Use /conversar ou /limpar para voltar à conversa.\n\nVocê: Histórico da sessão limpo. Conversa retomada.\n\nVocê: \nGuará 1: 4\n\nVocê: \nAté mais!\n",
+  "stderr": "",
+  "review": {
+    "prior_failure": "O responsável observou uma citação inventada da última frase de README.md, sem ferramenta ou conteúdo fornecido.",
+    "file_requests": "Três respostas fixas de indisponibilidade, emitidas pelo Python; nenhum conteúdo de arquivo foi afirmado.",
+    "model_calls": "Os testes automatizados confirmam zero chamadas ao modelo nos três pedidos de arquivo. O pedido de matemática após /conversar usa o modelo real.",
+    "ordinary_chat": "Após /conversar, 2 + 2 recebeu resposta 4; processo terminou sem erro.",
+    "scope": "Valida o fluxo reconhecido e o modo explícito /arquivo. Não demonstra bloqueio universal de todas as formulações em linguagem natural. Leitura real e as duas ferramentas continuam pendentes.",
+    "content_review": "Pedidos sintéticos; registro revisado, sem credenciais ou conversas pessoais."
+  }
+}
