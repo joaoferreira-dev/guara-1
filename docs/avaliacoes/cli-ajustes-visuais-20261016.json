@@ -1,0 +1,252 @@
+{
+  "executed_at": "2026-10-16T20:34:07.312232-03:00",
+  "captures": [
+    {
+      "rows": 24,
+      "columns": 80,
+      "screen": [
+        "  Guará 1  /  OrbeIA",
+        "  Assistente pessoal local · conversa em português",
+        "",
+        "                                                                             ^",
+        "  Escreva uma mensagem para começar.",
+        "  /limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar",
+        "",
+        "  Calculadora e leitura de arquivos ainda indisponíveis.",
+        "",
+        "",
+        "  Quero uma conversa sem rótulos.",
+        "  Esta é a segunda linha da mensagem.",
+        "",
+        "",
+        "  As respostas aparecem diretamente no corpo do terminal.                    v",
+        "  Alt+Enter nova linha · PgUp/PgDn rolar",
+        "────────────────────────────────────────────────────────────────────────────────",
+        "",
+        "   Mensagem em edição",
+        " > Segunda linha",
+        "   Terceira linha",
+        "",
+        "────────────────────────────────────────────────────────────────────────────────",
+        "  guara1 · Qwen3-1.7B              Pronto · Enter enviar · Ctrl+C sair"
+      ],
+      "transcript": "GUARÁ 1\nSeu assistente local do projeto OrbeIA.\n\nEscreva uma mensagem para começar.\n/limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar\n\nCalculadora e leitura de arquivos ainda indisponíveis.\n\n\nQuero uma conversa sem rótulos.\nEsta é a segunda linha da mensagem.\n\n\nAs respostas aparecem diretamente no corpo do terminal.",
+      "real_ollama": false,
+      "synthetic_sample": true,
+      "background_regions": [
+        {
+          "row": 9,
+          "start": 2,
+          "end": 76,
+          "color": "1b1f29"
+        },
+        {
+          "row": 10,
+          "start": 2,
+          "end": 76,
+          "color": "1b1f29"
+        },
+        {
+          "row": 11,
+          "start": 2,
+          "end": 76,
+          "color": "1b1f29"
+        },
+        {
+          "row": 12,
+          "start": 2,
+          "end": 76,
+          "color": "1b1f29"
+        },
+        {
+          "row": 17,
+          "start": 0,
+          "end": 80,
+          "color": "1b1f29"
+        },
+        {
+          "row": 18,
+          "start": 0,
+          "end": 80,
+          "color": "1b1f29"
+        },
+        {
+          "row": 19,
+          "start": 0,
+          "end": 80,
+          "color": "1b1f29"
+        },
+        {
+          "row": 20,
+          "start": 0,
+          "end": 80,
+          "color": "1b1f29"
+        },
+        {
+          "row": 21,
+          "start": 0,
+          "end": 80,
+          "color": "1b1f29"
+        }
+      ],
+      "input_height": 3
+    },
+    {
+      "rows": 36,
+      "columns": 120,
+      "screen": [
+        "  Guará 1  /  OrbeIA",
+        "  Assistente pessoal local · conversa em português",
+        "",
+        "  GUARÁ 1                                                                                                            ^",
+        "  Seu assistente local do projeto OrbeIA.",
+        "",
+        "  Escreva uma mensagem para começar.",
+        "  /limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar",
+        "",
+        "  Calculadora e leitura de arquivos ainda indisponíveis.",
+        "",
+        "",
+        "  Quero uma conversa sem rótulos.",
+        "  Esta é a segunda linha da mensagem.",
+        "",
+        "",
+        "  As respostas aparecem diretamente no corpo do terminal.",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "                                                                                                                     v",
+        "  Alt+Enter nova linha · PgUp/PgDn rolar",
+        "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────",
+        "",
+        "   Mensagem em edição",
+        " > Segunda linha",
+        "   Terceira linha",
+        "",
+        "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────",
+        "  guara1 · Qwen3-1.7B                                  Pronto · Enter enviar · Ctrl+C sair"
+      ],
+      "transcript": "GUARÁ 1\nSeu assistente local do projeto OrbeIA.\n\nEscreva uma mensagem para começar.\n/limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar\n\nCalculadora e leitura de arquivos ainda indisponíveis.\n\n\nQuero uma conversa sem rótulos.\nEsta é a segunda linha da mensagem.\n\n\nAs respostas aparecem diretamente no corpo do terminal.",
+      "real_ollama": false,
+      "synthetic_sample": true,
+      "background_regions": [
+        {
+          "row": 11,
+          "start": 2,
+          "end": 116,
+          "color": "1b1f29"
+        },
+        {
+          "row": 12,
+          "start": 2,
+          "end": 116,
+          "color": "1b1f29"
+        },
+        {
+          "row": 13,
+          "start": 2,
+          "end": 116,
+          "color": "1b1f29"
+        },
+        {
+          "row": 14,
+          "start": 2,
+          "end": 116,
+          "color": "1b1f29"
+        },
+        {
+          "row": 29,
+          "start": 0,
+          "end": 120,
+          "color": "1b1f29"
+        },
+        {
+          "row": 30,
+          "start": 0,
+          "end": 120,
+          "color": "1b1f29"
+        },
+        {
+          "row": 31,
+          "start": 0,
+          "end": 120,
+          "color": "1b1f29"
+        },
+        {
+          "row": 32,
+          "start": 0,
+          "end": 120,
+          "color": "1b1f29"
+        },
+        {
+          "row": 33,
+          "start": 0,
+          "end": 120,
+          "color": "1b1f29"
+        }
+      ],
+      "input_height": 3
+    },
+    {
+      "rows": 12,
+      "columns": 40,
+      "screen": [
+        "  Guará 1  /  OrbeIA",
+        "  Assistente pessoal local · conversa em",
+        "",
+        "  o corpo do terminal.               ^",
+        "  Alt+Enter nova linha · PgUp/PgDn rolar",
+        "────────────────────────────────────────",
+        "",
+        "   Mensagem em edição",
+        " > Segunda linha",
+        "",
+        "────────────────────────────────────────",
+        "  guara1 · Qwen3-1.7B     Pronto · Enter"
+      ],
+      "transcript": "GUARÁ 1\nSeu assistente local do projeto OrbeIA.\n\nEscreva uma mensagem para começar.\n/limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar\n\nCalculadora e leitura de arquivos ainda indisponíveis.\n\n\nQuero uma conversa sem rótulos.\nEsta é a segunda linha da mensagem.\n\n\nAs respostas aparecem diretamente no corpo do terminal.",
+      "real_ollama": false,
+      "synthetic_sample": true,
+      "background_regions": [
+        {
+          "row": 6,
+          "start": 0,
+          "end": 40,
+          "color": "1b1f29"
+        },
+        {
+          "row": 7,
+          "start": 0,
+          "end": 40,
+          "color": "1b1f29"
+        },
+        {
+          "row": 8,
+          "start": 0,
+          "end": 40,
+          "color": "1b1f29"
+        },
+        {
+          "row": 9,
+          "start": 0,
+          "end": 40,
+          "color": "1b1f29"
+        }
+      ],
+      "input_height": 2
+    }
+  ],
+  "review": {
+    "method": "Capturas da grade real do renderizador, com entrada por pipe, saída virtual e dados sintéticos. Sem inferência ou benchmark adicional.",
+    "changes": "Fundo padrão do terminal; entrada e mensagens do usuário com fundo 1b1f29; sem rótulos de remetente; entrada expansível com marcador centralizado.",
+    "automated_test_count": 36,
+    "checks": "Cor de fundo dos caracteres renderizados, ausência de rótulos, crescimento por Alt+Enter e quebra automática, contração ao limpar, centralização do marcador e rodapé em três tamanhos.",
+    "limits": "Até oito linhas de entrada, reduzidas conforme o espaço disponível. Aparência na janela e fonte do terminal físico ainda precisa de conferência manual."
+  }
+}

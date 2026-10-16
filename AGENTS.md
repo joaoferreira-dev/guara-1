@@ -16,14 +16,17 @@ OrbeIA é o projeto; Guará 1 é seu assistente pessoal local. A descrição cor
 
 - `README.md`: preparação, comandos e estado real do programa.
 - `Modelfile`: base e instruções iniciais do assistente; após mudanças, recriar com `ollama create guara1 -f Modelfile`.
-- `app.py`: conversa no terminal via API local, histórico apenas na sessão, comandos `/limpar`, `/conversar`, `/arquivo` e `/sair` e tratamento de erros. Envia mensagem de sistema explícita, que deve permanecer coerente com o `Modelfile`.
+- `app.py`: núcleo compartilhado `Conversation`, integração HTTP e entrada da aplicação. Abre a interface visual em terminal interativo; `--texto` ou redirecionamento usa o formato simples. Envia mensagem de sistema explícita, que deve permanecer coerente com o `Modelfile`.
+- `terminal_ui.py`: tela cheia com prompt_toolkit, entrada fixa, respostas no corpo, modelo configurado no canto inferior esquerdo e chamada em thread para manter a interface responsiva. Não adicionar comportamento de conversa independente do núcleo compartilhado.
+- `terminal_keys.py`: compatibilidade de Shift+Enter para nova linha (Enter envia), com eventos Windows e sequências VT. Usa detalhes do prompt_toolkit 3.0.52; revalidar ao atualizar a dependência. Ctrl+J é alternativa para terminais sem distinção do modificador.
 - `capabilities.py`: fluxo explícito de arquivos indisponíveis. Bloqueia continuações reconhecidas e retoma automaticamente ao mudar de assunto, sem apagar o histórico anterior; o reconhecimento por referências comuns é conservador e não oferece cobertura universal de linguagem natural.
 - `session.py`: primeira mensagem e contadores da sessão, independentes do contexto curto. Consultas reconhecidas sobre o início e ações da sessão usam registros do Python; `/limpar` e `/conversar` redefinem esses fatos. Recusas e falhas entram no histórico com origem identificada; não excluir pares apenas por mencionar arquivos.
 - `tests/test_app.py`: testes da integração com respostas simuladas, sem executar o modelo.
 - `tools.py`: futuro registro de ferramentas permitidas; começa vazio.
 - `checks.json`: estrutura dos 20 casos previstos, com quatro regressões em PT-BR; não representa avaliação completa.
-- `requirements.txt`: dependências Python; atualmente apenas biblioteca padrão.
+- `requirements.txt`: prompt_toolkit 3.0.52 para a interface; a integração HTTP e as ferramentas usam a biblioteca padrão. Manter compatibilidade com Python 3.9.
 - `scripts/validar_qwen.py`: medição local no Windows; faz chamadas reais ao Ollama e não executa o código gerado.
+- `scripts/validar_cli.py`: captura a grade real do renderizador em três tamanhos de terminal; `--real` inclui uma chamada ao modelo. Saídas locais ficam em `resultados/`.
 - `docs/benchmarks/`: referências selecionadas, revisadas e versionadas.
 - `docs/avaliacoes/`: evidências revisadas dos casos de comportamento, com pedidos sintéticos.
 - `resultados/benchmarks/`: saídas locais com data e hora, ignoradas pelo Git.

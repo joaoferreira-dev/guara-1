@@ -1,9 +1,12 @@
 """Conversa local do Guará 1 pelo terminal, sem persistir mensagens."""
 
 import json
+import argparse
 import socket
+import sys
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 
 from capabilities import CapabilitySession, FILE_NOTICE, is_file_followup, mentions_file
 from session import SessionFacts
@@ -125,58 +128,100 @@ def remember(history, facts, prompt, answer, kind):
     return trim_history(history + [{"role": "user", "content": prompt}, assistant])
 
 
+@dataclass
+class Reply:
+    text: str = ""
+    kind: str = "system"
+    limited: bool = False
+    exit: bool = False
+    clear: bool = False
+
+
+class Conversation:
+    """Comportamento compartilhado pelas interfaces visual e de texto."""
+
+    model = MODEL
+
+    def __init__(self):
+        self.history = []
+        self.capabilities = CapabilitySession()
+        self.facts = SessionFacts()
+
+    def submit(self, prompt):
+        prompt = prompt.strip()
+        if not prompt:
+            return Reply()
+        if len(prompt) > MAX_INPUT_CHARS:
+            return Reply("Aviso: a mensagem deve ter no máximo 1.000 caracteres.")
+        if prompt.lower() == "/sair":
+            return Reply(exit=True)
+        if prompt.lower() in ("/limpar", "/conversar"):
+            self.history = []
+            self.capabilities.reset()
+            self.facts = SessionFacts()
+            return Reply("Histórico da sessão limpo. Conversa retomada.", clear=True)
+        answer = self.facts.answer(prompt)
+        if answer is not None:
+            self.capabilities.reset()
+            kind = "session_fact"
+        else:
+            answer = self.capabilities.handle(prompt)
+            kind = "file_unavailable"
+        if answer is not None:
+            self.history = remember(self.history, self.facts, prompt, answer, kind)
+            return Reply(answer, kind)
+        if prompt.startswith("/"):
+            return Reply("Comando desconhecido. Use /limpar, /conversar, /arquivo ou /sair.")
+        try:
+            answer, limited = chat(self.history, prompt)
+        except ChatError as error:
+            answer = "Aviso: {}".format(error)
+            self.history = remember(self.history, self.facts, prompt, answer, "error")
+            return Reply(answer, "error")
+        self.history = remember(self.history, self.facts, prompt, answer, "model")
+        return Reply(answer, "model", limited=limited)
+
+
 def main():
+    """Modo de texto simples, também usado com entrada redirecionada."""
     print("Guará 1 — OrbeIA")
     print("Conversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.")
     print("Histórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.")
-    history = []
-    capabilities = CapabilitySession()
-    facts = SessionFacts()
+    conversation = Conversation()
     try:
         while True:
-            prompt = input("\nVocê: ").strip()
-            if not prompt:
-                continue
-            if len(prompt) > MAX_INPUT_CHARS:
-                print("Aviso: a mensagem deve ter no máximo 1.000 caracteres.")
-                continue
-            if prompt.lower() == "/sair":
+            reply = conversation.submit(input("\nVocê: "))
+            if reply.exit:
                 break
-            if prompt.lower() in ("/limpar", "/conversar"):
-                history.clear()
-                capabilities.reset()
-                facts = SessionFacts()
-                print("Histórico da sessão limpo. Conversa retomada.")
-                continue
-            factual_answer = facts.answer(prompt)
-            if factual_answer is not None:
-                capabilities.reset()
-                print("\nGuará 1: {}".format(factual_answer))
-                history = remember(history, facts, prompt, factual_answer, "session_fact")
-                continue
-            notice = capabilities.handle(prompt)
-            if notice:
-                print("\nGuará 1: {}".format(notice))
-                history = remember(history, facts, prompt, notice, "file_unavailable")
-                continue
-            if prompt.startswith("/"):
-                print("Comando desconhecido. Use /limpar, /conversar, /arquivo ou /sair.")
-                continue
-            try:
-                answer, limited = chat(history, prompt)
-            except ChatError as error:
-                answer = "Aviso: {}".format(error)
-                print(answer)
-                history = remember(history, facts, prompt, answer, "error")
-                continue
-            print("\nGuará 1: {}".format(answer))
-            if limited:
+            if reply.text:
+                prefix = "\nGuará 1: " if reply.kind not in ("system", "error") else ""
+                print(prefix + reply.text)
+            if reply.limited:
                 print("Aviso: a resposta atingiu o limite de geração e pode estar incompleta.")
-            history = remember(history, facts, prompt, answer, "model")
     except (EOFError, KeyboardInterrupt):
         pass
     print("\nAté mais!")
 
 
+def launch(argv=None):
+    parser = argparse.ArgumentParser(description="Guará 1 — assistente local do projeto OrbeIA.", add_help=False)
+    options = parser.add_argument_group("opções")
+    options.add_argument("-h", "--help", action="help", help="Mostrar ajuda e encerrar.")
+    options.add_argument("--texto", action="store_true", help="Usar conversa em texto simples, sem tela interativa.")
+    args = parser.parse_args(argv)
+    if args.texto or not (sys.stdin.isatty() and sys.stdout.isatty()):
+        main()
+        return
+    try:
+        from terminal_ui import TerminalUI
+    except ModuleNotFoundError as error:
+        if error.name not in ("prompt_toolkit", "wcwidth"):
+            raise
+        print("Instale a interface com: .venv/Scripts/python.exe -m pip install -r requirements.txt",
+              file=sys.stderr)
+        raise SystemExit(1)
+    TerminalUI(Conversation()).run()
+
+
 if __name__ == "__main__":
-    main()
+    launch()

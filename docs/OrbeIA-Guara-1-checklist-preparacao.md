@@ -176,6 +176,44 @@ O filtro por palavras foi removido. Todos os turnos válidos, incluindo recusas 
 
 Verificação em 16 de outubro de 2026: 26 testes passaram, incluindo preservação do início após dez turnos, origem dos avisos, manutenção de mensagens legítimas com referências a arquivos e reset. A sequência do responsável foi repetida pelo terminal, com Ollama real: leitura recusada, `teste`, `Olá`, resumo factual e primeira mensagem literal correta. Após `/limpar`, uma nova saudação passou a ser identificada como a primeira mensagem. O processo encerrou sem erro, em 13,34 s no total. Evidência revisada: [memoria-sessao-20261016.json](avaliacoes/memoria-sessao-20261016.json). `checks.json` contém quatro regressões em PT-BR; as demais tarefas e a avaliação completa continuam pendentes. As consultas reconhecidas são limitadas, e as demais respostas do modelo ainda exigem avaliação de conteúdo e idioma.
 
+## 4.1. Interface de terminal estruturada
+
+Incluída por solicitação do responsável para oferecer entrada fixa na parte inferior, respostas no corpo e identificação do modelo no canto inferior esquerdo. A implementação permanece neste repositório.
+
+- [x] Separar o desenho da tela do núcleo de conversa, compartilhando memória, comandos e erros.
+- [x] Implementar tela cheia com campo de mensagem fixo e área de conversa com rolagem.
+- [x] Exibir `guara1 · Qwen3-1.7B` no rodapé esquerdo e estado de espera à direita.
+- [x] Permitir envio por Enter, nova linha por Shift+Enter e edição de texto.
+- [x] Manter a interface responsiva durante chamadas ao Ollama, limitando a um pedido por vez.
+- [x] Permitir saída por Ctrl+C ou `/sair`, inclusive durante a espera.
+- [x] Preservar modo simples com `--texto` e para entrada/saída redirecionada.
+- [x] Verificar renderização em 80×24, 120×36 e 40×12 e executar uma chamada real na interface.
+- [ ] Conferir manualmente aparência, fonte, colagem e atalhos na janela de terminal usada pelo responsável.
+
+Implementação: `terminal_ui.py` usa prompt_toolkit 3.0.52, registrado em `requirements.txt` e instalado no `.venv` com Python 3.9.13. `app.py` oferece o núcleo `Conversation` usado pelas duas interfaces. A entrada cresce conforme o texto, até oito linhas ou o espaço disponível, com respiro vertical e marcador centralizado. PgUp/PgDn e roda do mouse rolam a conversa; Ctrl+End volta ao final. A área visual mantém até 40.000 caracteres em memória. O contexto do modelo e os fatos da sessão continuam separados dessa área visual. Respostas aparecem completas, sem streaming. O modelo exibido é o configurado; ainda não há seletor. A saída durante espera não garante cancelamento da geração no Ollama.
+
+Verificação: testes reais de teclado e renderizador com entrada por pipe validaram posições do rodapé e campo, quebra de linha, envio, recusa de leitura, retomada, limpeza, rolagem e Ctrl+C durante uma espera simulada. A primeira verificação identificou que o campo crescia para quatro linhas; sua altura foi fixada em duas e os testes passaram. O script `.venv/Scripts/python.exe scripts/validar_cli.py --real` fez uma chamada ao Ollama, obteve `4` para `2 + 2` e recuperou a primeira mensagem pelo núcleo factual. A [evidência revisada](avaliacoes/cli-terminal-20261016.json) contém grades do renderizador; não são screenshots de uma janela Windows Terminal. A verificação visual manual permanece pendente. Essa etapa não habilita ferramentas nem conclui os 20 casos do MVP.
+
+### Ajustes visuais solicitados pelo responsável
+
+Removido o fundo próprio da tela para preservar o fundo configurado no terminal. O destaque de fundo ficou restrito à caixa de entrada e às mensagens do usuário, com a mesma cor. Os nomes de remetente foram removidos das mensagens exibidas; a origem continua registrada internamente para os fatos da sessão. A caixa agora cresce com novas linhas e quebras automáticas, até oito linhas ou o espaço disponível. O marcador `>` foi separado da edição e centralizado verticalmente entre linhas de respiro.
+
+Verificação: testes do renderizador confirmam fundo padrão fora das mensagens, cores iguais na entrada e mensagem enviada, ausência de rótulos, expansão e contração da caixa, posição do marcador e rodapé preservado. A captura com `.venv/Scripts/python.exe scripts/validar_cli.py --amostra` usa mensagens sintéticas e entrada de três linhas, sem executar o modelo; em 40×12 o campo respeita o espaço disponível. Evidência revisada: [cli-ajustes-visuais-20261016.json](avaliacoes/cli-ajustes-visuais-20261016.json). A aparência na janela real do responsável continua sujeita à conferência manual.
+
+### Marcador nas mensagens e indicação de atividade
+
+O marcador `>` também aparece no início das mensagens enviadas pelo usuário, mantendo o fundo destacado e sem nomes de remetente. Durante um pedido, uma linha acima da entrada mostra `Trabalhando…`, indicador animado e segundos decorridos. O redesenho ocorre a cada 120 ms, sem chamadas extras ao modelo ou alteração de `think: false`. O indicador desaparece após resposta ou erro. É possível editar um rascunho durante a espera; continua permitido apenas um pedido por vez. Em telas pequenas, a altura da entrada considera o espaço ocupado pela indicação de atividade.
+
+Verificação: testes com espera simulada conferem o indicador no renderizador, mudança de quadro da animação, manutenção do rodapé, edição durante espera e remoção do indicador tanto no sucesso quanto na falha. O teste de mensagem enviada verifica o marcador sem introduzi-lo na mensagem original registrada pela sessão. A validação de saída por Ctrl+C durante espera permanece ativa. Nenhuma medição de inferência foi repetida para esses ajustes de apresentação.
+
+### Shift+Enter para nova linha
+
+Atalho alterado para Shift+Enter; Enter continua enviando a mensagem. `terminal_keys.py` preserva o modificador nos eventos nativos do Windows e reconhece as sequências CSI-u e modifyOtherKeys, convertendo-as no evento de nova linha usado pela interface. O adaptador é específico da versão 3.0.52 do prompt_toolkit e deve ser revalidado ao atualizar a dependência. Ctrl+J também insere nova linha quando o terminal não distingue Shift+Enter de Enter. Dicas e documentação foram atualizadas. Os 39 testes passaram, incluindo eventos Windows sintéticos, parser VT e inserção de múltiplas linhas sem envio antecipado.
+
+### Nome exibido e sugestões de comandos
+
+O rodapé passou a exibir `Guará-1 · Qwen3-1.7B`; o identificador usado no Ollama continua sendo `guara1`. Ao digitar `/` no início da entrada, uma caixa de sugestões mostra os quatro comandos disponíveis com suas descrições e filtra pelo prefixo. Setas selecionam, Tab completa, Esc fecha e Enter confirma a seleção ou executa o comando completo. O menu não oferece operações inexistentes nem dispara chamadas ao modelo ao completar. Testes do renderizador e teclado verificam abertura, filtragem, preenchimento, seleção, fechamento e manutenção do rodapé, incluindo terminal pequeno.
+
 ## 5. Especificar e testar as duas ferramentas
 
 - [ ] Definir as operações aceitas pela calculadora e seus argumentos.
@@ -211,9 +249,10 @@ Conferir respostas de problemas, executar o código quando possível e verificar
 2. Confirmar a variante do Qwen3 e repetir alguns testes com registro de tempo e memória.
 3. Preparar o repositório e as instruções do Guará 1.
 4. Implementar uma conversa mínima em Python.
-5. Validar uma chamada de ferramenta antes de ampliar a aplicação.
-6. Completar o histórico e a segunda ferramenta.
-7. Executar os 20 casos e documentar como iniciar o programa e suas limitações.
+5. Implementar e conferir a interface de terminal da seção 4.1, preservando o núcleo validado.
+6. Validar uma chamada de ferramenta antes de ampliar a aplicação.
+7. Completar o histórico e a segunda ferramenta.
+8. Executar os 20 casos e documentar como iniciar o programa e suas limitações.
 
 Qwen3-4B fica para comparação posterior, caso o desempenho permita. Interface gráfica, nuvem, banco dedicado, CI/CD e treinamento não são dependências deste MVP. LoRA/QLoRA só será avaliado após identificar uma necessidade concreta que instruções ou correções na aplicação não resolvam.
 

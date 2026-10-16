@@ -1,3 +1,3 @@
 # Ambiente inicial: Python 3.9.13.
-# Nenhuma dependência externa nesta etapa; usar a biblioteca padrão.
-# Adicionar aqui dependências necessárias quando a aplicação evoluir.
+# Interface de terminal com entrada fixa, edição e redesenho no Windows.
+prompt_toolkit==3.0.52

@@ -6,7 +6,7 @@ O MVP será executado no Windows pelo terminal, com Ollama e um programa Python.
 
 ## Estado atual
 
-O ambiente local, Qwen3-1.7B e a configuração `guara1` no Ollama foram validados. O programa Python já conversa pelo terminal, com histórico curto apenas na sessão e `think: false`. Calculadora, leitura de arquivos e os 20 casos de avaliação ainda estão pendentes.
+O ambiente local, Qwen3-1.7B e a configuração `guara1` no Ollama foram validados. O programa Python conversa por uma interface de terminal em tela cheia, com entrada fixa na parte inferior, respostas no corpo e modelo no canto inferior esquerdo. O histórico permanece apenas na sessão e `think: false` está ativo. Calculadora, leitura de arquivos e os 20 casos de avaliação ainda estão pendentes.
 
 ## Preparar o ambiente
 
@@ -23,7 +23,38 @@ py -m venv .venv
 .venv/Scripts/python.exe app.py
 ```
 
-Não há dependências Python externas. Com o Ollama ativo e `guara1` criado conforme abaixo, o último comando abre a conversa. Use `/limpar` para apagar o histórico da sessão e `/sair` para encerrar. EOF e Ctrl+C também encerram o programa. As mensagens não são salvas pela aplicação.
+Com o Ollama ativo e `guara1` criado conforme abaixo, o último comando abre a conversa. A interface usa `prompt_toolkit==3.0.52`, instalado pelo comando de dependências acima e compatível com Python 3.9. A integração HTTP continua usando a biblioteca padrão. As mensagens não são salvas pela aplicação.
+
+## Interface de terminal
+
+Em um terminal interativo, `.venv/Scripts/python.exe app.py` abre a tela cheia. O campo de mensagem cresce com novas linhas e quebras automáticas, até oito linhas de texto ou o espaço disponível no terminal, com uma linha de respiro acima e abaixo. O marcador `>` fica centralizado verticalmente e também aparece no início das mensagens enviadas pelo usuário. A conversa usa o fundo padrão do terminal; apenas a entrada e as mensagens enviadas pelo usuário recebem o mesmo fundo destacado. Mensagens e respostas aparecem sem rótulos de remetente, na área com rolagem. O rodapé mostra `Guará-1 · Qwen3-1.7B` à esquerda e o estado da interação à direita. Isso identifica o modelo configurado; a troca de modelos pela interface ainda não está implementada.
+
+| Ação | Tecla ou comando |
+| --- | --- |
+| Enviar mensagem | Enter |
+| Inserir nova linha | Shift+Enter (Ctrl+J como alternativa) |
+| Editar mensagem | Setas, Home, End, Backspace e Delete |
+| Rolar conversa | PgUp / PgDn ou roda do mouse |
+| Voltar ao final da conversa | Ctrl+End |
+| Mostrar comandos | Digitar `/` no início da entrada |
+| Selecionar e completar comando | Setas ↑/↓ e Tab |
+| Fechar sugestões | Esc |
+| Limpar conversa e fatos da sessão | `/limpar` ou `/conversar` |
+| Encerrar | `/sair`, Ctrl+C ou Ctrl+D com entrada vazia |
+
+Durante a espera, aparece `Trabalhando…` com um indicador animado e segundos decorridos acima da entrada, além do estado no rodapé. O indicador desaparece ao concluir ou falhar. É possível editar a próxima mensagem, mas Enter só envia quando o pedido atual terminar. Ctrl+C e `/sair` encerram a interface mesmo durante a espera; a geração no Ollama não é necessariamente cancelada. A resposta aparece completa, sem streaming nesta etapa. A área visual mantém até 40.000 caracteres recentes; isso é separado do contexto curto do modelo. Ao encerrar a tela cheia, o terminal anterior é restaurado.
+
+Para usar o formato simples anterior:
+
+```powershell
+.venv/Scripts/python.exe app.py --texto
+```
+
+Entrada ou saída redirecionada usa automaticamente o modo simples. Ambos os modos compartilham o mesmo núcleo de conversa, memória e tratamento de erros. A [validação da CLI](docs/avaliacoes/cli-terminal-20261016.json) contém capturas do renderizador em três tamanhos e uma chamada real ao Ollama; a aparência na janela e fonte usadas no computador ainda requer conferência manual.
+
+O adaptador de teclado preserva Shift+Enter nos eventos nativos do Windows e nas sequências VT que informam o modificador. Se o terminal enviar Shift+Enter como Enter comum, sem essa informação, use Ctrl+J para inserir a nova linha.
+
+O menu mostra `/limpar`, `/conversar`, `/arquivo` e `/sair`, com descrições, e filtra pelo prefixo digitado (por exemplo, `/li`). Tab preenche a opção selecionada. Enter aceita uma opção selecionada ou completa um prefixo; com o comando completo confirmado, Enter o executa. O nome visual `Guará-1` corresponde à configuração `guara1` usada pela API do Ollama.
 
 Pedidos de arquivo reconhecidos, como `leia o arquivo README.md`, recebem uma mensagem fixa do Python: nenhum arquivo foi lido e a leitura está indisponível. `/arquivo` entra explicitamente nesse fluxo. Continuações reconhecidas, como `E como termina?`, recebem a mesma orientação sem consultar o modelo. Ao mudar de assunto, por exemplo com `teste` ou uma pergunta de matemática, a conversa retoma automaticamente. Os pedidos recusados e suas respostas entram no histórico curto, identificados como avisos da aplicação, sem representar leitura de conteúdo. `/conversar` e `/limpar` começam uma conversa com histórico e fatos da sessão vazios.
 
@@ -94,15 +125,19 @@ A [comparação com raciocínio ativado](docs/benchmarks/comparacao-think-202610
 | `AGENTS.md` | Contexto e regras para trabalhar no repositório |
 | `Modelfile` | Base e instruções iniciais do Guará 1 |
 | `app.py` | Conversa pelo terminal e integração com Ollama |
+| `terminal_ui.py` | Tela cheia, entrada fixa, área de conversa e rodapé com modelo |
+| `terminal_keys.py` | Compatibilidade de Shift+Enter em eventos Windows e sequências VT |
 | `capabilities.py` | Fluxo de indisponibilidade de arquivos e estado das continuações |
 | `session.py` | Primeira mensagem e contadores da sessão, com respostas factuais locais |
 | `tests/test_app.py` | Verificações de limites, histórico, comandos e falhas da integração |
 | `tests/test_capabilities.py` | Referências reconhecidas e transições do fluxo de arquivos |
 | `tests/test_session.py` | Fatos da sessão preservados após descarte do contexto curto |
+| `tests/test_terminal_ui.py` | Renderização, teclado, envio, rolagem e saída durante espera |
 | `tools.py` | Registro inicial de ferramentas, ainda vazio |
 | `checks.json` | Estrutura dos casos de avaliação |
 | `requirements.txt` | Registro das dependências Python |
 | `scripts/validar_qwen.py` | Medição local da base |
+| `scripts/validar_cli.py` | Capturas do renderizador; `--real` inclui uma chamada ao Ollama |
 | `docs/benchmarks/` | Medições selecionadas para versionamento |
 | `docs/modelo-base.md` | Origem, identificação e licença do modelo |
 
