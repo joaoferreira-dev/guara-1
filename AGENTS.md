@@ -16,17 +16,19 @@ OrbeIA é o projeto; Guará 1 é seu assistente pessoal local. A descrição cor
 
 - `README.md`: preparação, comandos e estado real do programa.
 - `Modelfile`: base e instruções iniciais do assistente; após mudanças, recriar com `ollama create guara1 -f Modelfile`.
-- `app.py`: núcleo compartilhado `Conversation`, integração HTTP e entrada da aplicação. Abre a interface visual em terminal interativo; `--texto` ou redirecionamento usa o formato simples. Envia mensagem de sistema explícita, que deve permanecer coerente com o `Modelfile`.
-- `terminal_ui.py`: tela cheia com prompt_toolkit, entrada fixa, respostas no corpo, modelo configurado no canto inferior esquerdo e chamada em thread para manter a interface responsiva. Não adicionar comportamento de conversa independente do núcleo compartilhado.
-- `terminal_keys.py`: compatibilidade de Shift+Enter para nova linha (Enter envia), com eventos Windows e sequências VT. Usa detalhes do prompt_toolkit 3.0.52; revalidar ao atualizar a dependência. Ctrl+J é alternativa para terminais sem distinção do modificador.
-- `capabilities.py`: fluxo explícito de arquivos indisponíveis. Bloqueia continuações reconhecidas e retoma automaticamente ao mudar de assunto, sem apagar o histórico anterior; o reconhecimento por referências comuns é conservador e não oferece cobertura universal de linguagem natural.
-- `session.py`: primeira mensagem e contadores da sessão, independentes do contexto curto. Consultas reconhecidas sobre o início e ações da sessão usam registros do Python; `/limpar` e `/conversar` redefinem esses fatos. Recusas e falhas entram no histórico com origem identificada; não excluir pares apenas por mencionar arquivos.
+- `guara/cli.py` e `guara/__main__.py`: argumentos e escolha da interface. `python -m guara` abre a tela em terminal interativo; `--texto` ou redirecionamento usa o formato simples.
+- `guara/core/conversation.py`: núcleo compartilhado `Conversation` e integração HTTP. Envia mensagem de sistema explícita, que deve permanecer coerente com o `Modelfile`.
+- `guara/terminal/interface.py`: tela cheia com prompt_toolkit, entrada fixa, respostas no corpo, modelo configurado no canto inferior esquerdo e chamada em thread para manter a interface responsiva. Não adicionar comportamento de conversa independente do núcleo compartilhado.
+- `guara/terminal/keys.py`: compatibilidade de Shift+Enter para nova linha (Enter envia), com eventos Windows e sequências VT. Usa detalhes do prompt_toolkit 3.0.52; revalidar ao atualizar a dependência. Ctrl+J é alternativa para terminais sem distinção do modificador.
+- `guara/core/capabilities.py`: fluxo explícito de arquivos indisponíveis. Bloqueia continuações reconhecidas e retoma automaticamente ao mudar de assunto, sem apagar o histórico anterior; o reconhecimento por referências comuns é conservador e não oferece cobertura universal de linguagem natural.
+- `guara/core/session.py`: primeira mensagem e contadores da sessão, independentes do contexto curto. Consultas reconhecidas sobre o início e ações da sessão usam registros do Python; `/limpar` e `/conversar` redefinem esses fatos. Recusas e falhas entram no histórico com origem identificada; não excluir pares apenas por mencionar arquivos.
 - `tests/test_app.py`: testes da integração com respostas simuladas, sem executar o modelo.
-- `tools.py`: futuro registro de ferramentas permitidas; começa vazio.
+- `guara/tools/__init__.py`: futuro registro de ferramentas permitidas; começa vazio.
 - `checks.json`: estrutura dos 20 casos previstos, com quatro regressões em PT-BR; não representa avaliação completa.
 - `requirements.txt`: prompt_toolkit 3.0.52 para a interface; a integração HTTP e as ferramentas usam a biblioteca padrão. Manter compatibilidade com Python 3.9.
 - `scripts/validar_qwen.py`: medição local no Windows; faz chamadas reais ao Ollama e não executa o código gerado.
 - `scripts/validar_cli.py`: captura a grade real do renderizador em três tamanhos de terminal; `--real` inclui uma chamada ao modelo. Saídas locais ficam em `resultados/`.
+- `scripts/instalar_comando.ps1`: instala `guara.cmd` em `%LOCALAPPDATA%\Programs\OrbeIA\bin` e registra a pasta no PATH do usuário. Usa o `.venv` e `scripts/iniciar_guara.py`, sem ativação. Não sobrescrever comandos de outra origem; após mover o projeto, reinstalar o comando.
 - `docs/benchmarks/`: referências selecionadas, revisadas e versionadas.
 - `docs/avaliacoes/`: evidências revisadas dos casos de comportamento, com pedidos sintéticos.
 - `resultados/benchmarks/`: saídas locais com data e hora, ignoradas pelo Git.
@@ -37,7 +39,7 @@ OrbeIA é o projeto; Guará 1 é seu assistente pessoal local. A descrição cor
 - Preservar compatibilidade com Python 3.9 enquanto essa for a versão do ambiente; não usar sintaxe ou APIs de versões posteriores sem atualizar explicitamente a configuração e a documentação.
 - Preferir arquivos pequenos e biblioteca padrão. Adicionar dependências somente quando houver necessidade concreta e registrá-las em `requirements.txt`.
 - Usar `.venv/Scripts/python.exe` diretamente; não é necessário ativar o ambiente nem mudar a política de execução do PowerShell.
-- Comando atual: `.venv/Scripts/python.exe app.py`, com Ollama ativo e `guara1` criado. Envia `think: false`, contexto de 2.048 tokens e geração de até 256 tokens. O histórico guarda até três pares e 2.400 caracteres; a entrada aceita até 1.000 caracteres. O timeout de conexão/leitura é de 30 segundos, sem prazo absoluto para a operação inteira.
+- Comando atual: `guara` após instalar o lançador, ou `.venv/Scripts/python.exe -m guara` na raiz do projeto, com Ollama ativo e `guara1` criado. Envia `think: false`, contexto de 2.048 tokens e geração de até 256 tokens. O histórico guarda até três pares e 2.400 caracteres; a entrada aceita até 1.000 caracteres. O timeout de conexão/leitura é de 30 segundos, sem prazo absoluto para a operação inteira.
 - Testes da integração: `.venv/Scripts/python.exe -m unittest discover -s tests -v`.
 - Para medir a base: `.venv/Scripts/python.exe scripts/validar_qwen.py`, com Ollama ativo. Não repetir medições demoradas para alterações apenas documentais.
 - Ao implementar comportamento, verificar casos relevantes e registrar falhas reais. Não marcar etapas como concluídas sem execução ou evidência correspondente.

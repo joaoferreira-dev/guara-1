@@ -2,8 +2,8 @@
 
 import unittest
 
-import app
-from session import SessionFacts
+from guara.core import conversation as app
+from guara.core.session import SessionFacts
 
 
 class SessionTests(unittest.TestCase):

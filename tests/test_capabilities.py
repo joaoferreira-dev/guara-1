@@ -2,7 +2,7 @@
 
 import unittest
 
-from capabilities import CapabilitySession, FILE_NOTICE, mentions_file
+from guara.core.capabilities import CapabilitySession, FILE_NOTICE, mentions_file
 
 
 class CapabilityTests(unittest.TestCase):

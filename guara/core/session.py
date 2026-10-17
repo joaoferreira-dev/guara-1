@@ -3,7 +3,7 @@
 import json
 import re
 
-from capabilities import normalize
+from guara.core.capabilities import normalize
 
 
 class SessionFacts:

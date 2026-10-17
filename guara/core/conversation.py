@@ -1,15 +1,13 @@
-"""Conversa local do Guará 1 pelo terminal, sem persistir mensagens."""
+"""Núcleo de conversa e integração HTTP local, sem persistir mensagens."""
 
 import json
-import argparse
 import socket
-import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
-from capabilities import CapabilitySession, FILE_NOTICE, is_file_followup, mentions_file
-from session import SessionFacts
+from guara.core.capabilities import CapabilitySession, FILE_NOTICE, is_file_followup, mentions_file
+from guara.core.session import SessionFacts
 
 
 API_URL = "http://localhost:11434/api/chat"
@@ -180,48 +178,3 @@ class Conversation:
             return Reply(answer, "error")
         self.history = remember(self.history, self.facts, prompt, answer, "model")
         return Reply(answer, "model", limited=limited)
-
-
-def main():
-    """Modo de texto simples, também usado com entrada redirecionada."""
-    print("Guará 1 — OrbeIA")
-    print("Conversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.")
-    print("Histórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.")
-    conversation = Conversation()
-    try:
-        while True:
-            reply = conversation.submit(input("\nVocê: "))
-            if reply.exit:
-                break
-            if reply.text:
-                prefix = "\nGuará 1: " if reply.kind not in ("system", "error") else ""
-                print(prefix + reply.text)
-            if reply.limited:
-                print("Aviso: a resposta atingiu o limite de geração e pode estar incompleta.")
-    except (EOFError, KeyboardInterrupt):
-        pass
-    print("\nAté mais!")
-
-
-def launch(argv=None):
-    parser = argparse.ArgumentParser(description="Guará 1 — assistente local do projeto OrbeIA.", add_help=False)
-    options = parser.add_argument_group("opções")
-    options.add_argument("-h", "--help", action="help", help="Mostrar ajuda e encerrar.")
-    options.add_argument("--texto", action="store_true", help="Usar conversa em texto simples, sem tela interativa.")
-    args = parser.parse_args(argv)
-    if args.texto or not (sys.stdin.isatty() and sys.stdout.isatty()):
-        main()
-        return
-    try:
-        from terminal_ui import TerminalUI
-    except ModuleNotFoundError as error:
-        if error.name not in ("prompt_toolkit", "wcwidth"):
-            raise
-        print("Instale a interface com: .venv/Scripts/python.exe -m pip install -r requirements.txt",
-              file=sys.stderr)
-        raise SystemExit(1)
-    TerminalUI(Conversation()).run()
-
-
-if __name__ == "__main__":
-    launch()

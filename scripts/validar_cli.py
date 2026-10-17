@@ -13,8 +13,8 @@ from prompt_toolkit.data_structures import Size
 from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
-from app import Conversation
-from terminal_ui import TerminalUI
+from guara.core.conversation import Conversation
+from guara.terminal.interface import TerminalUI
 
 
 class SizedOutput(DummyOutput):

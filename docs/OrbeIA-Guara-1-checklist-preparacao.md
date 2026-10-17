@@ -208,11 +208,29 @@ Verificação: testes com espera simulada conferem o indicador no renderizador, 
 
 ### Shift+Enter para nova linha
 
+Estado atual: o responsável confirmou falha no PowerShell integrado do VS Code, executando `guara`: Shift+Enter envia e Ctrl+J oculta o painel. A configuração inspecionada do Windows Terminal não se aplica a esse terminal. A configuração específica do VS Code ainda não foi aplicada, e o funcionamento físico nesse ambiente permanece pendente; os testes automatizados não substituem essa confirmação.
+
+Compatibilidade com a configuração local do Windows Terminal: o atalho Shift+Enter envia ESC + CR, que a interface agora reconhece como nova linha. A reprodução automatizada confirma que a entrada permanece no editor sem chamar o modelo, a caixa cresce e Enter envia depois a mensagem completa com duas linhas. Essa sequência também pode ser produzida por Alt+Enter. O teste usa entrada por pipe; a confirmação com o teclado físico continua pendente.
+
+Correção posterior: o prompt_toolkit podia selecionar o leitor VT no Windows e deixar de usar o adaptador de Shift+Enter. `guara/terminal/keys.py` agora seleciona o leitor de eventos nativos e desativa a entrada VT nesse caminho, preservando o modificador. Os 45 testes passaram, incluindo a seleção do leitor, eventos Windows sintéticos e inserção de nova linha na interface. A confirmação com o teclado no terminal do usuário permanece pendente.
+
 Atalho alterado para Shift+Enter; Enter continua enviando a mensagem. `terminal_keys.py` preserva o modificador nos eventos nativos do Windows e reconhece as sequências CSI-u e modifyOtherKeys, convertendo-as no evento de nova linha usado pela interface. O adaptador é específico da versão 3.0.52 do prompt_toolkit e deve ser revalidado ao atualizar a dependência. Ctrl+J também insere nova linha quando o terminal não distingue Shift+Enter de Enter. Dicas e documentação foram atualizadas. Os 39 testes passaram, incluindo eventos Windows sintéticos, parser VT e inserção de múltiplas linhas sem envio antecipado.
 
 ### Nome exibido e sugestões de comandos
 
 O rodapé passou a exibir `Guará-1 · Qwen3-1.7B`; o identificador usado no Ollama continua sendo `guara1`. Ao digitar `/` no início da entrada, uma caixa de sugestões mostra os quatro comandos disponíveis com suas descrições e filtra pelo prefixo. Setas selecionam, Tab completa, Esc fecha e Enter confirma a seleção ou executa o comando completo. O menu não oferece operações inexistentes nem dispara chamadas ao modelo ao completar. Testes do renderizador e teclado verificam abertura, filtragem, preenchimento, seleção, fechamento e manutenção do rodapé, incluindo terminal pequeno.
+
+### Comando global no usuário Windows
+
+O comando `guara` foi instalado para abrir a CLI a partir de qualquer pasta, sem ativar o ambiente. `scripts/instalar_comando.ps1` cria um lançador em `%LOCALAPPDATA%\Programs\OrbeIA\bin` com os caminhos do `.venv` e do ponto de entrada, e acrescenta essa pasta ao PATH do usuário sem substituir as entradas existentes. Não altera o PATH da máquina nem sobrescreve outro comando `guara`. O instalador oferece `-WhatIf` e pode ser executado novamente após mover o repositório.
+
+Verificação em 16 de outubro de 2026: simulação com `-WhatIf`, instalação real autorizada e resolução do comando com o PATH persistido. A partir da pasta temporária do Windows, `guara --help` e `guara --texto` com `/sair` encerraram com código zero, sem ativar o `.venv` nem fazer inferência. Terminais já abertos precisam ser reiniciados para carregar a alteração de PATH.
+
+### Organização do código em pacote
+
+Os módulos Python foram retirados da raiz e organizados em `guara/`: `cli.py` e `__main__.py` selecionam a interface; `core/` contém conversa, integração HTTP, capacidades e memória; `terminal/` contém tela e teclado; `tools/` reserva o registro das ferramentas. Os scripts operacionais permanecem em `scripts/`, os testes em `tests/` e os documentos em `docs/`. Referências a nomes antigos nos registros históricos descrevem a organização usada naquelas execuções.
+
+A entrada do pacote é `.venv/Scripts/python.exe -m guara`, executada na raiz. O comando global `guara` usa `scripts/iniciar_guara.py`, que localiza o pacote sem depender da pasta atual. O instalador e o lançador já instalado foram atualizados. Imports e alvos de substituição dos testes foram ajustados sem mudar contratos da conversa ou os parâmetros do modelo. O comando global foi validado a partir da pasta temporária do Windows com `--help` e `/sair` no modo simples; as evidências e benchmarks anteriores foram preservados.
 
 ## 5. Especificar e testar as duas ferramentas
 
@@ -263,3 +281,7 @@ Qwen3-4B fica para comparação posterior, caso o desempenho permita. Interface 
 - [Chamada de ferramentas no Ollama](https://docs.ollama.com/capabilities/tool-calling).
 
 As referências foram consultadas durante a análise do plano. A documentação do Ollama informa pelo menos 4 GB de espaço para instalação, além do espaço dos modelos. Conferir os requisitos novamente se houver mudança de versão ou dificuldade de instalação.
+
+### Marcador da entrada no topo
+
+O marcador `>` permanece alinhado à primeira linha de texto quando a caixa cresce, preservando o respiro superior. Os 15 testes da interface passaram, incluindo a posição do marcador na entrada com três linhas.

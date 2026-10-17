@@ -18,7 +18,7 @@ def configure_shift_enter():
 
 
 if sys.platform == "win32":
-    from prompt_toolkit.input.win32 import ConsoleInputReader
+    from prompt_toolkit.input.win32 import ConsoleInputReader, Win32Input
     from prompt_toolkit.key_binding.key_processor import KeyPress
 
     class ShiftEnterConsoleReader(ConsoleInputReader):
@@ -34,7 +34,11 @@ if sys.platform == "win32":
 def create_terminal_input():
     configure_shift_enter()
     terminal_input = create_input()
-    if sys.platform == "win32" and isinstance(getattr(terminal_input, "console_input_reader", None), ConsoleInputReader):
+    if sys.platform == "win32" and isinstance(terminal_input, Win32Input):
+        # Win32Input prefere o leitor VT quando o console o permite. Nesse
+        # caminho, Enter pode chegar sem modificadores. Ler os eventos nativos
+        # preserva SHIFT_PRESSED e mantém o atalho distinto de Enter.
         terminal_input.console_input_reader.close()
+        terminal_input._use_virtual_terminal_input = False
         terminal_input.console_input_reader = ShiftEnterConsoleReader()
     return terminal_input

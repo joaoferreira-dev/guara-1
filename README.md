@@ -20,14 +20,30 @@ py -m venv .venv
 
 # Usar o Python do ambiente sem precisar ativá-lo.
 .venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe app.py
+.venv/Scripts/python.exe -m guara
 ```
 
 Com o Ollama ativo e `guara1` criado conforme abaixo, o último comando abre a conversa. A interface usa `prompt_toolkit==3.0.52`, instalado pelo comando de dependências acima e compatível com Python 3.9. A integração HTTP continua usando a biblioteca padrão. As mensagens não são salvas pela aplicação.
 
 ## Interface de terminal
 
-Em um terminal interativo, `.venv/Scripts/python.exe app.py` abre a tela cheia. O campo de mensagem cresce com novas linhas e quebras automáticas, até oito linhas de texto ou o espaço disponível no terminal, com uma linha de respiro acima e abaixo. O marcador `>` fica centralizado verticalmente e também aparece no início das mensagens enviadas pelo usuário. A conversa usa o fundo padrão do terminal; apenas a entrada e as mensagens enviadas pelo usuário recebem o mesmo fundo destacado. Mensagens e respostas aparecem sem rótulos de remetente, na área com rolagem. O rodapé mostra `Guará-1 · Qwen3-1.7B` à esquerda e o estado da interação à direita. Isso identifica o modelo configurado; a troca de modelos pela interface ainda não está implementada.
+O comando de uso diário é:
+
+```powershell
+guara
+```
+
+Ele já foi instalado no usuário deste computador e funciona de qualquer pasta, sem ativar o `.venv`. Feche e abra o terminal após a instalação para carregar o PATH atualizado. `guara --help` mostra a ajuda e `guara --texto` abre o modo simples.
+
+Para instalar ou atualizar o comando em outro ambiente, execute uma vez na raiz do repositório:
+
+```powershell
+& ./scripts/instalar_comando.ps1
+```
+
+O instalador cria `guara.cmd` em `%LOCALAPPDATA%\Programs\OrbeIA\bin` e acrescenta essa pasta ao PATH do usuário, preservando as entradas existentes. Ele usa o Python do `.venv` e o `scripts/iniciar_guara.py` deste repositório. Se mover a pasta do projeto, execute o instalador novamente. Um comando `guara` preexistente de outra origem é preservado e impede a instalação.
+
+Em um terminal interativo, `.venv/Scripts/python.exe -m guara` abre a tela cheia. O campo de mensagem cresce com novas linhas e quebras automáticas, até oito linhas de texto ou o espaço disponível no terminal, com uma linha de respiro acima e abaixo. O marcador `>` fica alinhado à primeira linha de texto da caixa e também aparece no início das mensagens enviadas pelo usuário. A conversa usa o fundo padrão do terminal; apenas a entrada e as mensagens enviadas pelo usuário recebem o mesmo fundo destacado. Mensagens e respostas aparecem sem rótulos de remetente, na área com rolagem. O rodapé mostra `Guará-1 · Qwen3-1.7B` à esquerda e o estado da interação à direita. Isso identifica o modelo configurado; a troca de modelos pela interface ainda não está implementada.
 
 | Ação | Tecla ou comando |
 | --- | --- |
@@ -47,12 +63,14 @@ Durante a espera, aparece `Trabalhando…` com um indicador animado e segundos d
 Para usar o formato simples anterior:
 
 ```powershell
-.venv/Scripts/python.exe app.py --texto
+.venv/Scripts/python.exe -m guara --texto
 ```
 
 Entrada ou saída redirecionada usa automaticamente o modo simples. Ambos os modos compartilham o mesmo núcleo de conversa, memória e tratamento de erros. A [validação da CLI](docs/avaliacoes/cli-terminal-20261016.json) contém capturas do renderizador em três tamanhos e uma chamada real ao Ollama; a aparência na janela e fonte usadas no computador ainda requer conferência manual.
 
-O adaptador de teclado preserva Shift+Enter nos eventos nativos do Windows e nas sequências VT que informam o modificador. Se o terminal enviar Shift+Enter como Enter comum, sem essa informação, use Ctrl+J para inserir a nova linha.
+No Windows, o adaptador usa o leitor de eventos nativos para preservar o modificador de Shift+Enter, inclusive quando o console oferece entrada VT. Também reconhece sequências VT que informam o modificador e a sequência ESC + CR enviada pelo atalho Shift+Enter configurado no Windows Terminal. Alt+Enter também insere nova linha se o terminal enviar essa mesma sequência. Se o terminal enviar Shift+Enter como Enter comum, sem essa informação, use Ctrl+J para inserir a nova linha.
+
+No terminal integrado do VS Code, Shift+Enter ainda foi reportado como envio de mensagem; a configuração específica e a validação física permanecem pendentes. Ctrl+J pode ser interceptado pelo editor para ocultar o painel.
 
 O menu mostra `/limpar`, `/conversar`, `/arquivo` e `/sair`, com descrições, e filtra pelo prefixo digitado (por exemplo, `/li`). Tab preenche a opção selecionada. Enter aceita uma opção selecionada ou completa um prefixo; com o comando completo confirmado, Enter o executa. O nome visual `Guará-1` corresponde à configuração `guara1` usada pela API do Ollama.
 
@@ -120,24 +138,39 @@ A [comparação com raciocínio ativado](docs/benchmarks/comparacao-think-202610
 
 ## Arquivos
 
+```text
+guara/
+  __main__.py          # python -m guara
+  cli.py               # argumentos e escolha da interface
+  core/                # conversa, integração e memória
+  terminal/            # tela e teclado
+  tools/               # registro de ferramentas futuras
+scripts/               # instalação e validações locais
+tests/                 # testes automatizados
+docs/                  # plano, checklist e evidências
+```
+
 | Caminho | Finalidade |
 | --- | --- |
 | `AGENTS.md` | Contexto e regras para trabalhar no repositório |
 | `Modelfile` | Base e instruções iniciais do Guará 1 |
-| `app.py` | Conversa pelo terminal e integração com Ollama |
-| `terminal_ui.py` | Tela cheia, entrada fixa, área de conversa e rodapé com modelo |
-| `terminal_keys.py` | Compatibilidade de Shift+Enter em eventos Windows e sequências VT |
-| `capabilities.py` | Fluxo de indisponibilidade de arquivos e estado das continuações |
-| `session.py` | Primeira mensagem e contadores da sessão, com respostas factuais locais |
+| `guara/cli.py` e `guara/__main__.py` | Argumentos e entrada do pacote |
+| `guara/core/conversation.py` | Conversa pelo terminal e integração com Ollama |
+| `guara/terminal/interface.py` | Tela cheia, entrada fixa, área de conversa e rodapé com modelo |
+| `guara/terminal/keys.py` | Compatibilidade de Shift+Enter em eventos Windows e sequências VT |
+| `guara/core/capabilities.py` | Fluxo de indisponibilidade de arquivos e estado das continuações |
+| `guara/core/session.py` | Primeira mensagem e contadores da sessão, com respostas factuais locais |
 | `tests/test_app.py` | Verificações de limites, histórico, comandos e falhas da integração |
 | `tests/test_capabilities.py` | Referências reconhecidas e transições do fluxo de arquivos |
 | `tests/test_session.py` | Fatos da sessão preservados após descarte do contexto curto |
 | `tests/test_terminal_ui.py` | Renderização, teclado, envio, rolagem e saída durante espera |
-| `tools.py` | Registro inicial de ferramentas, ainda vazio |
+| `guara/tools/__init__.py` | Registro inicial de ferramentas, ainda vazio |
 | `checks.json` | Estrutura dos casos de avaliação |
 | `requirements.txt` | Registro das dependências Python |
 | `scripts/validar_qwen.py` | Medição local da base |
 | `scripts/validar_cli.py` | Capturas do renderizador; `--real` inclui uma chamada ao Ollama |
+| `scripts/instalar_comando.ps1` | Instala o comando `guara` no PATH do usuário Windows |
+| `scripts/iniciar_guara.py` | Entrada usada pelo comando global, independente da pasta atual |
 | `docs/benchmarks/` | Medições selecionadas para versionamento |
 | `docs/modelo-base.md` | Origem, identificação e licença do modelo |
 

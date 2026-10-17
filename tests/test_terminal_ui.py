@@ -9,11 +9,11 @@ from prompt_toolkit.data_structures import Size
 from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
-from app import Conversation, Reply
-from terminal_ui import MAX_TRANSCRIPT_CHARS, TerminalUI, CommandCompleter
+from guara.core.conversation import Conversation, Reply
+from guara.terminal.interface import MAX_TRANSCRIPT_CHARS, TerminalUI, CommandCompleter
 from prompt_toolkit.completion import CompleteEvent
 from prompt_toolkit.document import Document
-import app
+from guara import cli as app
 
 
 class SizedOutput(DummyOutput):
@@ -50,19 +50,19 @@ class LaunchTests(unittest.TestCase):
 
     def test_interactive_terminal_uses_visual_interface_by_default(self):
         with patch("sys.stdin.isatty", return_value=True), patch("sys.stdout.isatty", return_value=True), patch(
-            "terminal_ui.TerminalUI"
+            "guara.terminal.interface.TerminalUI"
         ) as terminal:
             app.launch([])
             terminal.return_value.run.assert_called_once()
 
     def test_redirected_input_uses_plain_interface(self):
-        with patch("sys.stdin.isatty", return_value=False), patch("app.main") as plain:
+        with patch("sys.stdin.isatty", return_value=False), patch("guara.cli.main") as plain:
             app.launch([])
             plain.assert_called_once()
 
     def test_text_flag_overrides_interactive_terminal(self):
         with patch("sys.stdin.isatty", return_value=True), patch("sys.stdout.isatty", return_value=True), patch(
-            "app.main"
+            "guara.cli.main"
         ) as plain:
             app.launch(["--texto"])
             plain.assert_called_once()
@@ -70,7 +70,7 @@ class LaunchTests(unittest.TestCase):
 
 class TerminalTests(unittest.IsolatedAsyncioTestCase):
     async def test_slash_menu_filters_and_tab_fills_without_submitting(self):
-        with create_pipe_input() as pipe, patch("app.chat") as chat:
+        with create_pipe_input() as pipe, patch("guara.core.conversation.chat") as chat:
             output = SizedOutput()
             ui = TerminalUI(Conversation(), input=pipe, output=output)
             task = asyncio.create_task(ui.application.run_async())
@@ -136,7 +136,7 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                     await task
 
     async def test_submit_refusal_recovery_and_clear_use_shared_engine(self):
-        with create_pipe_input() as pipe, patch("app.chat", return_value=("Olá!", False)):
+        with create_pipe_input() as pipe, patch("guara.core.conversation.chat", return_value=("Olá!", False)):
             ui = TerminalUI(Conversation(), input=pipe, output=SizedOutput())
             task = asyncio.create_task(ui.application.run_async())
             try:
@@ -194,7 +194,7 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                     await task
 
     async def test_multiline_input_and_literal_response(self):
-        with create_pipe_input() as pipe, patch("app.chat", return_value=("<b>Texto</b>\x1b[31m", False)):
+        with create_pipe_input() as pipe, patch("guara.core.conversation.chat", return_value=("<b>Texto</b>\x1b[31m", False)):
             ui = TerminalUI(Conversation(), input=pipe, output=SizedOutput())
             task = asyncio.create_task(ui.application.run_async())
             try:
@@ -203,6 +203,29 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                 await until(lambda: "<b>Texto</b>" in ui.transcript.text and not ui.busy)
                 self.assertEqual(ui.conversation.facts.first_message, "Linha 1\nLinha 2")
                 self.assertNotIn("\x1b", ui.transcript.text)
+            finally:
+                ui.application.exit()
+                await task
+
+    async def test_windows_terminal_shift_enter_inserts_newline_before_submission(self):
+        with create_pipe_input() as pipe, patch(
+            "guara.core.conversation.chat", return_value=("Resposta simulada", False)
+        ) as chat:
+            ui = TerminalUI(Conversation(), input=pipe, output=SizedOutput())
+            task = asyncio.create_task(ui.application.run_async())
+            try:
+                await until(lambda: ui.application.is_running)
+                # Sequência configurada para Shift+Enter no Windows Terminal.
+                pipe.send_text("Linha 1\x1b\r")
+                await until(lambda: ui.editor.text == "Linha 1\n")
+                chat.assert_not_called()
+                self.assertFalse(ui.busy)
+                self.assertGreaterEqual(ui.editor_height(), 2)
+                pipe.send_text("Linha 2\r")
+                await until(lambda: chat.called and not ui.busy)
+                chat.assert_called_once()
+                self.assertEqual(ui.conversation.facts.first_message, "Linha 1\nLinha 2")
+                self.assertEqual(ui.editor.text, "")
             finally:
                 ui.application.exit()
                 await task
@@ -253,7 +276,7 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                 ui.application.exit()
                 await task
 
-    async def test_input_grows_with_newlines_and_wrap_and_marker_is_centered(self):
+    async def test_input_grows_with_newlines_and_wrap_and_marker_stays_at_top(self):
         with create_pipe_input() as pipe:
             output = SizedOutput()
             ui = TerminalUI(Conversation(), input=pipe, output=output)
@@ -267,7 +290,8 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                 lines = screen_lines(ui, output)
                 marker_row = next(i for i, line in enumerate(lines) if line.startswith(" > "))
                 input_rows = [i for i in range(output.rows) if "class:input" in screen.data_buffer[i][0].style]
-                self.assertLessEqual(abs(marker_row - (min(input_rows) + max(input_rows)) / 2), 0.5)
+                self.assertEqual(marker_row, min(input_rows) + 1)
+                self.assertIn("Linha 1", lines[marker_row])
                 self.assertTrue(lines[-1].startswith("  Guará-1"))
                 ui.editor.text = "x" * 160
                 ui.application.invalidate()

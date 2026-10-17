@@ -7,7 +7,8 @@ import unittest
 import urllib.error
 from unittest.mock import patch
 
-import app
+from guara.core import conversation as app
+from guara import cli
 
 
 def pair(prompt, answer, origin=None):
@@ -25,7 +26,7 @@ def response(content="Olá!", reason="stop"):
 class ChatTests(unittest.TestCase):
     def test_request_disables_thinking_and_keeps_history(self):
         history = pair("Estou aprendendo Python.", "Vamos praticar.")
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             open_url.return_value.__enter__.return_value.read.return_value = response("Python")
             self.assertEqual(app.chat(history, "Qual linguagem?"), ("Python", False))
             request = open_url.call_args.args[0]
@@ -43,7 +44,7 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(app.trim_history(pair("x" * 1000, "y" * 1000), 1000), [])
 
     def test_input_limits_prevent_network_calls(self):
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             for prompt in ("", " ", "x" * 1001):
                 with self.subTest(prompt_length=len(prompt)), self.assertRaises(app.ChatError):
                     app.chat([], prompt)
@@ -53,7 +54,7 @@ class ChatTests(unittest.TestCase):
         invalid = [b"not JSON", b"[]", b"{}", response(""), response(None),
                    response("x" * 4001), b"x" * 65537,
                    b'{"done":true,"message":{"role":"user","content":"oi"}}']
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             for raw in invalid:
                 with self.subTest(raw_length=len(raw)), self.assertRaises(app.ChatError):
                     open_url.return_value.__enter__.return_value.read.return_value = raw
@@ -69,29 +70,29 @@ class ChatTests(unittest.TestCase):
         ]
         for error, expected in errors:
             with self.subTest(error=type(error).__name__), patch(
-                "app.urllib.request.urlopen", side_effect=error
+                "guara.core.conversation.urllib.request.urlopen", side_effect=error
             ), self.assertRaisesRegex(app.ChatError, expected):
                 app.chat([], "Oi")
 
     def test_generation_limit_is_reported(self):
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             open_url.return_value.__enter__.return_value.read.return_value = response("Parcial", "length")
             self.assertEqual(app.chat([], "Oi"), ("Parcial", True))
 
     def test_clear_and_unknown_command_do_not_call_model(self):
         with patch("builtins.input", side_effect=["Oi", "/limpar", "/outro", "Novo", "/sair"]), patch(
-            "app.chat", return_value=("Olá", False)
+            "guara.core.conversation.chat", return_value=("Olá", False)
         ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            app.main()
+            cli.main()
             self.assertEqual(chat.call_count, 2)
             self.assertEqual(chat.call_args_list[1].args[0], [])
             self.assertIn("Comando desconhecido", output.getvalue())
 
     def test_failed_turn_is_recorded_as_application_error(self):
         with patch("builtins.input", side_effect=["Primeiro", "Falha", "Depois", "/sair"]), patch(
-            "app.chat", side_effect=[("Resposta", False), app.ChatError("erro"), ("OK", False)]
+            "guara.core.conversation.chat", side_effect=[("Resposta", False), app.ChatError("erro"), ("OK", False)]
         ) as chat, patch("sys.stdout", new_callable=io.StringIO):
-            app.main()
+            cli.main()
             self.assertEqual(chat.call_args_list[2].args[0],
                              pair("Primeiro", "Resposta") + pair("Falha", "Aviso: erro", "error"))
 
@@ -100,16 +101,16 @@ class ChatTests(unittest.TestCase):
             with self.subTest(error=error), patch("builtins.input", side_effect=error), patch(
                 "sys.stdout", new_callable=io.StringIO
             ) as output:
-                app.main()
+                cli.main()
                 self.assertIn("Até mais", output.getvalue())
 
     def test_file_request_and_followup_never_reach_model(self):
         prompts = ["leia o arquivo README.md e me traga um resumo",
                    "Me traga a última frase do arquivo", "E como termina?", "/sair"]
-        with patch("builtins.input", side_effect=prompts), patch("app.chat") as chat, patch(
+        with patch("builtins.input", side_effect=prompts), patch("guara.core.conversation.chat") as chat, patch(
             "sys.stdout", new_callable=io.StringIO
         ) as output:
-            app.main()
+            cli.main()
             chat.assert_not_called()
             self.assertEqual(output.getvalue().count("Nenhum arquivo foi lido."), 3)
 
@@ -118,17 +119,17 @@ class ChatTests(unittest.TestCase):
             with self.subTest(command=command), patch(
                 "builtins.input", side_effect=["Oi", "/arquivo README.md", "Última frase?",
                                                command, "Quanto é 2 + 2?", "/sair"]
-            ), patch("app.chat", return_value=("Olá", False)) as chat, patch(
+            ), patch("guara.core.conversation.chat", return_value=("Olá", False)) as chat, patch(
                 "sys.stdout", new_callable=io.StringIO
             ):
-                app.main()
+                cli.main()
                 self.assertEqual(chat.call_count, 2)
                 self.assertEqual(chat.call_args_list[-1].args[0], [])
 
     def test_direct_chat_rejects_file_request_and_followup_to_known_refusal(self):
         cases = [([], "Leia README.md"),
                  (pair("Leia README.md", app.FILE_NOTICE, "file_unavailable"), "Qual a última frase?")]
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             for history, prompt in cases:
                 with self.subTest(prompt=prompt), self.assertRaisesRegex(app.ChatError, "Nenhum arquivo"):
                     app.chat(history, prompt)
@@ -136,9 +137,9 @@ class ChatTests(unittest.TestCase):
 
     def test_oversized_file_request_does_not_change_session(self):
         with patch("builtins.input", side_effect=["arquivo " + "x" * 1000, "Olá", "/sair"]), patch(
-            "app.chat", return_value=("Olá", False)
+            "guara.core.conversation.chat", return_value=("Olá", False)
         ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            app.main()
+            cli.main()
             chat.assert_called_once_with([], "Olá")
             self.assertIn("no máximo 1.000", output.getvalue())
 
@@ -146,9 +147,9 @@ class ChatTests(unittest.TestCase):
         prompts = ["Estou aprendendo Python", "leia o arquivo README.md e me traga um resumo",
                    "E como termina?", "teste", "teste", "/sair"]
         with patch("builtins.input", side_effect=prompts), patch(
-            "app.chat", return_value=("Vamos praticar", False)
+            "guara.core.conversation.chat", return_value=("Vamos praticar", False)
         ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            app.main()
+            cli.main()
             self.assertEqual(chat.call_count, 3)
             self.assertEqual([c.args[1] for c in chat.call_args_list],
                              ["Estou aprendendo Python", "teste", "teste"])
@@ -162,7 +163,7 @@ class ChatTests(unittest.TestCase):
         history = pair("O que você fez?", "Não li arquivos.") + pair(
             "Leia README.md", app.FILE_NOTICE, "file_unavailable"
         )
-        with patch("app.urllib.request.urlopen") as open_url:
+        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
             open_url.return_value.__enter__.return_value.read.return_value = response("4")
             self.assertEqual(app.chat(history, "Quanto é 2 + 2?"), ("4", False))
             messages = json.loads(open_url.call_args.args[0].data)["messages"]
@@ -177,9 +178,9 @@ class ChatTests(unittest.TestCase):
         prompts = [first, "teste", "Olá", "O que voce ja fez nessa conversa?",
                    "O que perguntei na primeira vez nessa conversa?", "/sair"]
         with patch("builtins.input", side_effect=prompts), patch(
-            "app.chat", return_value=("Olá!", False)
+            "guara.core.conversation.chat", return_value=("Olá!", False)
         ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            app.main()
+            cli.main()
             self.assertEqual(chat.call_count, 2)
             self.assertIn('Sua primeira mensagem nesta sessão foi: "' + first + '"', output.getvalue())
             self.assertIn("2 resposta(s) do modelo, 1 pedido(s) de arquivo recusado(s)", output.getvalue())
@@ -189,10 +190,10 @@ class ChatTests(unittest.TestCase):
             with self.subTest(command=command), patch(
                 "builtins.input", side_effect=["Leia README.md", command, "Olá",
                                                "Qual foi minha primeira mensagem?", "/sair"]
-            ), patch("app.chat", return_value=("Oi", False)), patch(
+            ), patch("guara.core.conversation.chat", return_value=("Oi", False)), patch(
                 "sys.stdout", new_callable=io.StringIO
             ) as output:
-                app.main()
+                cli.main()
                 self.assertIn('Sua primeira mensagem nesta sessão foi: "Olá"', output.getvalue())
 
 

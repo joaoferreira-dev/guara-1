@@ -19,7 +19,7 @@ from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import TextArea
 from prompt_toolkit.utils import get_cwidth
-from terminal_keys import configure_shift_enter, create_terminal_input
+from guara.terminal.keys import configure_shift_enter, create_terminal_input
 
 
 WELCOME = (
@@ -215,7 +215,7 @@ class TerminalUI:
                 Window(height=1, style="class:input"),
                 VSplit([
                     HSplit([Window(FormattedTextControl(PROMPT_MARKER), height=1, style="class:input")],
-                           align=VerticalAlign.CENTER, width=3, style="class:input"),
+                           align=VerticalAlign.TOP, width=3, style="class:input"),
                     self.editor,
                     Window(width=2, style="class:input"),
                 ], height=self.editor_height),
@@ -278,6 +278,8 @@ class TerminalUI:
             self.editor.buffer.cancel_completion()
 
         @keys.add("c-j")
+        # Windows Terminal pode enviar ESC + CR ao pressionar Shift+Enter.
+        @keys.add("escape", "enter")
         def newline(event):
             self.editor.buffer.insert_text("\n")
 
