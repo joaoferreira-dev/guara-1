@@ -257,6 +257,12 @@ Prova real: `.venv/Scripts/python.exe scripts/validar_arquivos.py`, com três ca
 
 A verificação adicional da CLI real encontrou `2 + 2 = 4.` quando o pedido exigia somente `4`. As instruções do Python e do `Modelfile` foram reforçadas para não acrescentar equação, explicação ou Markdown nesse formato; `guara1` foi recriado. A repetição com `.venv/Scripts/python.exe scripts/validar_cli.py --real` retornou `4` e preservou a primeira mensagem factual. O script passou a salvar o relatório mesmo quando o formato falha, mantendo código de saída não zero. [Registro da falha e da correção](avaliacoes/regressao-formato-20261017.json). A prova de arquivos foi repetida com a configuração final e os três cenários passaram.
 
+### Diretório inicial no contexto do modelo
+
+Correção solicitada pelo responsável em 17 de outubro de 2026 após o modelo sugerir um README em `C:\home\user\README.md` em vez do arquivo do projeto. O Python já capturava a pasta inicial, mas não a informava ao modelo. A mensagem de sistema agora inclui o caminho real da sessão e orienta preservar referências relativas: para `leia README.md`, solicitar `ler_arquivo` com `{"caminho": "README.md"}`. Caminhos absolutos devem vir do usuário ou de identificação explícita pela aplicação. Esse contexto permanece também na chamada que recebe o resultado da ferramenta. A autorização externa e os limites de leitura continuam sendo aplicados pelo Python.
+
+Verificação automatizada: os 59 testes passaram, incluindo o diretório e a orientação de caminho relativo nos dois pedidos HTTP. Na validação com Qwen3 real, os dois pedidos usaram `caminho: "README.md"` sem solicitar acesso externo. O README sintético foi lido e a resposta identificou `Aurora`; o README real do projeto foi localizado, mas recusado por exceder 4.096 bytes. [Evidência revisada](avaliacoes/contexto-diretorio-20261017.json). O ajuste trata o contexto da seleção de arquivos; os limites de tamanho não foram alterados.
+
 ## 6. Preparar a avaliação antes de desenvolver
 
 - [ ] Escrever cinco casos de conversa e instruções em português brasileiro.

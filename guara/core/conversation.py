@@ -46,6 +46,22 @@ class ChatError(Exception):
     """Falha de integração que pode ser mostrada ao usuário."""
 
 
+def session_system_message(files):
+    """Informar a pasta real sem depender de suposições do modelo."""
+    return (
+        SYSTEM_MESSAGE
+        + " Diretório inicial desta sessão, informado pelo Python: "
+        + json.dumps(str(files.root), ensure_ascii=False)
+        + ". Caminhos relativos são resolvidos a partir desse diretório. "
+        "Ao receber somente um nome de arquivo ou caminho relativo, preserve esse caminho "
+        "no argumento de ler_arquivo. Por exemplo, para 'leia README.md', "
+        "use {\"caminho\": \"README.md\"}. Não invente pastas, usuários ou caminhos absolutos. "
+        "Use caminhos absolutos somente quando fornecidos pelo usuário ou identificados "
+        "explicitamente pela aplicação. O diretório informado não comprova o conteúdo "
+        "nem a existência dos arquivos. A aplicação controla a autorização para destinos externos."
+    )
+
+
 def trim_history(history, extra_chars=0):
     """Descartar os pares mais antigos, sem alterar a lista recebida."""
     recent = list(history)
@@ -71,7 +87,7 @@ def chat(history, prompt, files=None):
     if files.last_path and is_file_followup(prompt):
         context.append({"role": "system", "content": "Para esta continuação, consulte novamente com ler_arquivo: " + str(files.last_path)})
     messages = (
-        [{"role": "system", "content": SYSTEM_MESSAGE}]
+        [{"role": "system", "content": session_system_message(files)}]
         + context
         + [{"role": "user", "content": prompt}]
     )

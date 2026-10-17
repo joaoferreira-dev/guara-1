@@ -1,0 +1,43 @@
+{
+  "data": "2026-10-17",
+  "modelo": "guara1 baseado no Qwen3-1.7B",
+  "think": false,
+  "contexto": "Diretório inicial real incluído na mensagem de sistema; orientação para preservar README.md como caminho relativo. Primeiro caso usa texto sintético em diretório temporário; segundo solicita o README real do projeto, sem ler conteúdo por exceder o limite.",
+  "casos": [
+    {
+      "caso": "README sintético na pasta inicial",
+      "chamadas_solicitadas": [
+        {
+          "function": {
+            "name": "ler_arquivo",
+            "arguments": {
+              "caminho": "README.md"
+            }
+          }
+        }
+      ],
+      "autorizacao_externa_solicitada": false,
+      "leituras_concluidas": 1,
+      "resposta": "O nome do projeto é **Aurora**.",
+      "origem": "model"
+    },
+    {
+      "caso": "README real do projeto, acima do limite de tamanho",
+      "chamadas_solicitadas": [
+        {
+          "function": {
+            "name": "ler_arquivo",
+            "arguments": {
+              "caminho": "README.md"
+            }
+          }
+        }
+      ],
+      "autorizacao_externa_solicitada": false,
+      "leituras_concluidas": 0,
+      "resposta": "Aviso: Nenhum arquivo foi lido. O arquivo excede o limite de 4.096 bytes.",
+      "origem": "file_unavailable"
+    }
+  ],
+  "limites": "Duas solicitações reais, sem garantia de seleção correta em toda formulação. O limite de 4.096 bytes permanece."
+}

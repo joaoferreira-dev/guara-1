@@ -33,7 +33,8 @@ class ChatTests(unittest.TestCase):
             payload = json.loads(request.data)
             self.assertIs(payload["think"], False)
             self.assertEqual(payload["model"], "guara1")
-            self.assertEqual(payload["messages"][0], {"role": "system", "content": app.SYSTEM_MESSAGE})
+            self.assertEqual(payload["messages"][0], {
+                "role": "system", "content": app.session_system_message(app.FileAccess())})
             self.assertEqual(payload["messages"][1:], history + [{"role": "user", "content": "Qual linguagem?"}])
             self.assertEqual(open_url.call_args.kwargs["timeout"], 30)
 

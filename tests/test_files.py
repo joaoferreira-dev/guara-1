@@ -149,6 +149,21 @@ class FileTests(unittest.TestCase):
         self.assertFalse(first["think"])
         self.assertEqual(self.files.read_count, 1)
 
+    def test_model_receives_initial_directory_and_relative_readme_instruction(self):
+        (self.root / "README.md").write_text("Projeto sintético Aurora.", encoding="utf-8")
+        http = self.http([wire(calls=[call("README.md")]), wire("Aurora.")])
+        conversation = app.Conversation(self.root)
+        self.assertEqual(conversation.submit("Leia README.md").text, "Aurora.")
+        requests = [json.loads(c.args[0].data) for c in http.call_args_list]
+        for request in requests:
+            context = request["messages"][0]["content"]
+            self.assertIn(json.dumps(str(self.root), ensure_ascii=False), context)
+            self.assertIn('{"caminho": "README.md"}', context)
+            self.assertIn("Não invente pastas", context)
+        self.assertEqual(requests[0]["messages"][-1]["content"], "Leia README.md")
+        self.assertIsNone(conversation.pending)
+        self.assertEqual(conversation.files.last_path, self.root / "README.md")
+
     def test_no_tool_means_no_invented_file_answer_and_topic_resumes(self):
         self.http([wire("Inventei um resumo"), wire("Inventei o final"), wire("Olá!")])
         conversation = app.Conversation(self.root)
