@@ -9,8 +9,8 @@ from guara.core.conversation import Conversation
 def main():
     """Modo de texto simples, também usado com entrada redirecionada."""
     print("Guará 1 — OrbeIA")
-    print("Conversa local em português. Comandos: /limpar, /conversar, /arquivo e /sair.")
-    print("Histórico apenas nesta sessão. Calculadora e leitura de arquivos ainda indisponíveis.")
+    print("Conversa local em português. Comandos: /limpar, /conversar, /arquivo, /permitir, /negar e /sair.")
+    print("Histórico apenas nesta sessão. Leitura na pasta de início; acesso externo exige autorização.")
     conversation = Conversation()
     try:
         while True:

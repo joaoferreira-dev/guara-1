@@ -26,8 +26,8 @@ WELCOME = (
     "GUARÁ 1\n"
     "Seu assistente local do projeto OrbeIA.\n\n"
     "Escreva uma mensagem para começar.\n"
-    "/limpar  nova conversa    /arquivo  disponibilidade    /sair  encerrar\n\n"
-    "Calculadora e leitura de arquivos ainda indisponíveis.\n"
+    "/limpar  nova conversa    /arquivo  leitura    /sair  encerrar\n\n"
+    "Leitura na pasta de início. Acesso externo exige /permitir CODIGO; /negar CODIGO recusa.\n"
 )
 MAX_TRANSCRIPT_CHARS = 40000
 INPUT_STYLE = "bg:#1b1f29 #f1f3f5"
@@ -36,7 +36,9 @@ ACTIVITY_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 COMMANDS = (
     ("/limpar", "Nova conversa"),
     ("/conversar", "Reiniciar sessão"),
-    ("/arquivo", "Disponibilidade de leitura"),
+    ("/arquivo", "Ler texto ou mostrar pasta da sessão"),
+    ("/permitir", "Autorizar leitura externa pelo código"),
+    ("/negar", "Recusar leitura externa pelo código"),
     ("/sair", "Encerrar"),
 )
 

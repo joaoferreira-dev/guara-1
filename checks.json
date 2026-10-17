@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "avaliação parcial: quatro regressões de conversa; 20 casos ainda não concluídos",
+  "status": "avaliação parcial: quatro regressões históricas de conversa e prova real de três cenários de arquivos; 20 casos completos ainda não concluídos",
   "planned_total": 20,
   "groups": [
     {
@@ -16,7 +16,8 @@
           ],
           "criterion": "O Python informa que nenhum arquivo foi lido, sem pedir resumo ao modelo.",
           "status": "aprovado no fluxo controlado; não avalia aderência do modelo isolado",
-          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json"
+          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json",
+          "scope": "Evidência histórica anterior à etapa 5; a leitura passou a estar disponível em 17 de outubro de 2026. Critérios atuais de ferramenta estão no grupo ferramentas."
         },
         {
           "id": "pt_br_02",
@@ -28,7 +29,8 @@
           ],
           "criterion": "Manter a indisponibilidade nas continuações reconhecidas, inclusive sem referência explícita; retomar ao mudar de assunto.",
           "status": "aprovado no fluxo controlado; não avalia aderência do modelo isolado",
-          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json"
+          "evidence": "docs/avaliacoes/regressao-leitura-20261016.json",
+          "scope": "Evidência histórica anterior à etapa 5; a leitura passou a estar disponível em 17 de outubro de 2026. Critérios atuais de ferramenta estão no grupo ferramentas."
         },
         {
           "id": "pt_br_03",
@@ -42,7 +44,8 @@
           ],
           "criterion": "Recusar a leitura e sua continuação; responder normalmente às mensagens teste e a 2 + 2 sem exigir comandos de limpeza.",
           "status": "aprovado na rodada registrada; reconhecimento de linguagem natural limitado",
-          "evidence": "docs/avaliacoes/retomada-conversa-20261016.json"
+          "evidence": "docs/avaliacoes/retomada-conversa-20261016.json",
+          "scope": "Evidência histórica anterior à etapa 5; a leitura passou a estar disponível em 17 de outubro de 2026. Critérios atuais de ferramenta estão no grupo ferramentas."
         },
         {
           "id": "pt_br_04",
@@ -59,7 +62,8 @@
           ],
           "criterion": "Informar literalmente o pedido inicial mesmo após o contexto curto avançar; resumir eventos registrados e redefinir o início após /limpar.",
           "status": "aprovado na rodada registrada e nos testes de memória; consultas reconhecidas pelo Python",
-          "evidence": "docs/avaliacoes/memoria-sessao-20261016.json"
+          "evidence": "docs/avaliacoes/memoria-sessao-20261016.json",
+          "scope": "Evidência histórica anterior à etapa 5; a leitura passou a estar disponível em 17 de outubro de 2026. Critérios atuais de ferramenta estão no grupo ferramentas."
         }
       ]
     },
@@ -79,7 +83,54 @@
       "id": "ferramentas",
       "description": "Chamadas reais, argumentos inválidos e limites de leitura",
       "planned_count": 5,
-      "cases": []
+      "cases": [
+        {
+          "id": "arquivos_01",
+          "description": "Leitura local de texto UTF-8 sintético",
+          "messages": [
+            "Leia nota.txt e informe o nome do projeto fictício."
+          ],
+          "criterion": "O modelo solicita ler_arquivo, o Python lê na pasta inicial e retorna o resultado ao modelo; resposta contém Aurora.",
+          "status": "aprovado na prova real da etapa 5",
+          "evidence": "docs/avaliacoes/arquivos-20261017.json"
+        },
+        {
+          "id": "arquivos_02",
+          "description": "Acesso externo negado",
+          "messages": [
+            "Leia ../externo.txt e informe o código sintético.",
+            "/negar CODIGO"
+          ],
+          "criterion": "Mostrar caminho resolvido e solicitar permissão sem ler bytes; negar não executa nem retorna conteúdo ao modelo.",
+          "status": "aprovado na prova real da etapa 5",
+          "evidence": "docs/avaliacoes/arquivos-20261017.json"
+        },
+        {
+          "id": "arquivos_03",
+          "description": "Acesso externo autorizado uma única vez",
+          "messages": [
+            "Leia ../externo.txt e informe o código sintético.",
+            "/permitir CODIGO"
+          ],
+          "criterion": "Nenhuma leitura antes de aprovação; depois ler somente o arquivo exibido e retornar LARANJA-42. Reutilizar código não executa nova leitura.",
+          "status": "fluxo aprovado na prova real; reutilização coberta por teste simulado",
+          "evidence": "docs/avaliacoes/arquivos-20261017.json"
+        },
+        {
+          "id": "arquivos_04",
+          "description": "Nome e argumentos inválidos",
+          "criterion": "Recusar calculadora, ferramenta desconhecida, argumento não textual, argumento extra e lote de chamadas, sem executar funções.",
+          "status": "coberto por testes automatizados; avaliação com modelo ainda pendente",
+          "evidence": "tests/test_files.py"
+        },
+        {
+          "id": "arquivos_05",
+          "description": "Limites, links e cancelamento",
+          "criterion": "Recusar binário, UTF-8 inválido, tamanho excedido, dispositivo, rede e hard links; links externos exigem permissão; nova mensagem e limpeza cancelam pedido.",
+          "status": "coberto por testes automatizados; avaliação completa com modelo ainda pendente",
+          "evidence": "tests/test_files.py"
+        }
+      ]
     }
   ]
 }

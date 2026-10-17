@@ -1,15 +1,17 @@
 """Exercitar entrada e renderização reais do prompt_toolkit, sem Ollama."""
 
 import asyncio
+import tempfile
 import threading
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from prompt_toolkit.data_structures import Size
 from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
-from guara.core.conversation import Conversation, Reply
+from guara.core.conversation import Conversation, Reply, ChatError
 from guara.terminal.interface import MAX_TRANSCRIPT_CHARS, TerminalUI, CommandCompleter
 from prompt_toolkit.completion import CompleteEvent
 from prompt_toolkit.document import Document
@@ -42,7 +44,7 @@ class LaunchTests(unittest.TestCase):
         completer = CommandCompleter()
         def options(text):
             return [item.text for item in completer.get_completions(Document(text, len(text)), CompleteEvent())]
-        self.assertEqual(options("/"), ["/limpar", "/conversar", "/arquivo", "/sair"])
+        self.assertEqual(options("/"), ["/limpar", "/conversar", "/arquivo", "/permitir", "/negar", "/sair"])
         self.assertEqual(options("/li"), ["/limpar"])
         self.assertEqual(options("/inexistente"), [])
         self.assertEqual(options("texto /li"), [])
@@ -69,6 +71,39 @@ class LaunchTests(unittest.TestCase):
 
 
 class TerminalTests(unittest.IsolatedAsyncioTestCase):
+    async def test_external_permission_through_terminal_input(self):
+        with tempfile.TemporaryDirectory() as temporary, create_pipe_input() as pipe:
+            base = Path(temporary).resolve()
+            root = base / "sessao"
+            root.mkdir()
+            external = base / "externo.txt"
+            external.write_text("Aurora sintética.", encoding="utf-8")
+            message = {"role": "assistant", "content": "", "tool_calls": [{
+                "function": {"name": "ler_arquivo", "arguments": {"caminho": "../externo.txt"}}}]}
+            with patch("guara.core.conversation.request_message", side_effect=[
+                (message, False), ({"role": "assistant", "content": "Aurora sintética."}, False)
+            ]) as request:
+                ui = TerminalUI(Conversation(root), input=pipe, output=SizedOutput())
+                task = asyncio.create_task(ui.application.run_async())
+                try:
+                    await until(lambda: ui.application.is_running)
+                    pipe.send_text("Leia ../externo.txt\r")
+                    await until(lambda: ui.conversation.pending is not None and not ui.busy)
+                    self.assertIn(str(external), ui.transcript.text)
+                    self.assertIn("/permitir", ui.transcript.text)
+                    self.assertEqual(ui.conversation.files.read_count, 0)
+                    token = ui.conversation.pending.token
+                    pipe.send_text("/permitir " + token + "\r")
+                    await until(lambda: "Aurora sintética." in ui.transcript.text and not ui.busy)
+                    self.assertEqual(ui.conversation.facts.file_reads, 1)
+                    self.assertEqual(request.call_count, 2)
+                    pipe.send_text("/sair\r")
+                    await asyncio.wait_for(task, 2)
+                finally:
+                    if not task.done():
+                        ui.application.exit()
+                        await task
+
     async def test_slash_menu_filters_and_tab_fills_without_submitting(self):
         with create_pipe_input() as pipe, patch("guara.core.conversation.chat") as chat:
             output = SizedOutput()
@@ -79,7 +114,7 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                 pipe.send_text("/")
                 await until(lambda: ui.editor.buffer.complete_state is not None)
                 await until(lambda: "Reiniciar sessão" in "\n".join(screen_lines(ui, output)))
-                self.assertEqual(len(ui.editor.buffer.complete_state.completions), 4)
+                self.assertEqual(len(ui.editor.buffer.complete_state.completions), 6)
                 self.assertTrue(screen_lines(ui, output)[-1].startswith("  Guará-1"))
                 pipe.send_text("li")
                 await until(lambda: ui.editor.buffer.complete_state is not None
@@ -136,7 +171,7 @@ class TerminalTests(unittest.IsolatedAsyncioTestCase):
                     await task
 
     async def test_submit_refusal_recovery_and_clear_use_shared_engine(self):
-        with create_pipe_input() as pipe, patch("guara.core.conversation.chat", return_value=("Olá!", False)):
+        with create_pipe_input() as pipe, patch("guara.core.conversation.chat", side_effect=[ChatError("Nenhum arquivo foi lido."), ("Olá!", False)]):
             ui = TerminalUI(Conversation(), input=pipe, output=SizedOutput())
             task = asyncio.create_task(ui.application.run_async())
             try:

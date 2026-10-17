@@ -5,7 +5,7 @@ import json
 import socket
 import unittest
 import urllib.error
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 
 from guara.core import conversation as app
 from guara import cli
@@ -104,60 +104,13 @@ class ChatTests(unittest.TestCase):
                 cli.main()
                 self.assertIn("Até mais", output.getvalue())
 
-    def test_file_request_and_followup_never_reach_model(self):
-        prompts = ["leia o arquivo README.md e me traga um resumo",
-                   "Me traga a última frase do arquivo", "E como termina?", "/sair"]
-        with patch("builtins.input", side_effect=prompts), patch("guara.core.conversation.chat") as chat, patch(
-            "sys.stdout", new_callable=io.StringIO
-        ) as output:
-            cli.main()
-            chat.assert_not_called()
-            self.assertEqual(output.getvalue().count("Nenhum arquivo foi lido."), 3)
-
-    def test_file_mode_is_reset_with_history(self):
-        for command in ("/limpar", "/conversar"):
-            with self.subTest(command=command), patch(
-                "builtins.input", side_effect=["Oi", "/arquivo README.md", "Última frase?",
-                                               command, "Quanto é 2 + 2?", "/sair"]
-            ), patch("guara.core.conversation.chat", return_value=("Olá", False)) as chat, patch(
-                "sys.stdout", new_callable=io.StringIO
-            ):
-                cli.main()
-                self.assertEqual(chat.call_count, 2)
-                self.assertEqual(chat.call_args_list[-1].args[0], [])
-
-    def test_direct_chat_rejects_file_request_and_followup_to_known_refusal(self):
-        cases = [([], "Leia README.md"),
-                 (pair("Leia README.md", app.FILE_NOTICE, "file_unavailable"), "Qual a última frase?")]
-        with patch("guara.core.conversation.urllib.request.urlopen") as open_url:
-            for history, prompt in cases:
-                with self.subTest(prompt=prompt), self.assertRaisesRegex(app.ChatError, "Nenhum arquivo"):
-                    app.chat(history, prompt)
-            open_url.assert_not_called()
-
     def test_oversized_file_request_does_not_change_session(self):
         with patch("builtins.input", side_effect=["arquivo " + "x" * 1000, "Olá", "/sair"]), patch(
             "guara.core.conversation.chat", return_value=("Olá", False)
         ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
             cli.main()
-            chat.assert_called_once_with([], "Olá")
+            chat.assert_called_once_with([], "Olá", files=ANY)
             self.assertIn("no máximo 1.000", output.getvalue())
-
-    def test_file_rejection_does_not_trap_conversation_or_erase_context(self):
-        prompts = ["Estou aprendendo Python", "leia o arquivo README.md e me traga um resumo",
-                   "E como termina?", "teste", "teste", "/sair"]
-        with patch("builtins.input", side_effect=prompts), patch(
-            "guara.core.conversation.chat", return_value=("Vamos praticar", False)
-        ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            cli.main()
-            self.assertEqual(chat.call_count, 3)
-            self.assertEqual([c.args[1] for c in chat.call_args_list],
-                             ["Estou aprendendo Python", "teste", "teste"])
-            self.assertEqual(chat.call_args_list[1].args[0],
-                             pair("Estou aprendendo Python", "Vamos praticar")
-                             + pair(prompts[1], app.FILE_NOTICE, "file_unavailable")
-                             + pair(prompts[2], app.FILE_NOTICE, "file_unavailable"))
-            self.assertEqual(output.getvalue().count("Nenhum arquivo foi lido."), 2)
 
     def test_legitimate_file_mentions_and_application_refusals_are_preserved(self):
         history = pair("O que você fez?", "Não li arquivos.") + pair(
@@ -172,18 +125,6 @@ class ChatTests(unittest.TestCase):
             self.assertIn("[Resposta da aplicação: file_unavailable]", messages[4]["content"])
             self.assertNotIn("origin", messages[4])
             self.assertEqual(len(history), 4)
-
-    def test_first_question_uses_original_refused_request_after_context_rolls(self):
-        first = "leia o arquivo README.md e me traga um resumo"
-        prompts = [first, "teste", "Olá", "O que voce ja fez nessa conversa?",
-                   "O que perguntei na primeira vez nessa conversa?", "/sair"]
-        with patch("builtins.input", side_effect=prompts), patch(
-            "guara.core.conversation.chat", return_value=("Olá!", False)
-        ) as chat, patch("sys.stdout", new_callable=io.StringIO) as output:
-            cli.main()
-            self.assertEqual(chat.call_count, 2)
-            self.assertIn('Sua primeira mensagem nesta sessão foi: "' + first + '"', output.getvalue())
-            self.assertIn("2 resposta(s) do modelo, 1 pedido(s) de arquivo recusado(s)", output.getvalue())
 
     def test_session_facts_reset_with_clear_commands(self):
         for command in ("/limpar", "/conversar"):

@@ -1,11 +1,11 @@
-"""Fluxo explícito para capacidades indisponíveis nesta versão."""
+"""Reconhecimento conservador de referências e continuações de arquivos."""
 
 import re
 import unicodedata
 
 
 FILE_NOTICE = (
-    "Nenhum arquivo foi lido. A leitura de arquivos ainda não está disponível nesta versão; "
+    "Nenhum arquivo foi lido. A ferramenta não forneceu conteúdo nesta interação; "
     "não posso informar seu conteúdo, resumo ou última frase. "
     "Podemos continuar conversando sobre outro assunto."
 )
@@ -44,23 +44,3 @@ def is_file_followup(text):
             normalized,
         )
     )
-
-
-class CapabilitySession:
-    """Manter o estado de arquivo fora do histórico limitado do modelo."""
-
-    def __init__(self):
-        self.file_mode = False
-
-    def reset(self):
-        self.file_mode = False
-
-    def handle(self, prompt):
-        command = prompt.split(maxsplit=1)[0].lower() if prompt.strip() else ""
-        if command == "/arquivo" or mentions_file(prompt):
-            self.file_mode = True
-            return FILE_NOTICE
-        if self.file_mode and is_file_followup(prompt):
-            return FILE_NOTICE
-        self.reset()
-        return None

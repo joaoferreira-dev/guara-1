@@ -4,7 +4,7 @@ Atualizado em 17 de outubro de 2026.
 
 Base: [Plano do MVP](OrbeIA-Guara-1-plano-MVP.md).
 
-O objetivo é preparar o desenvolvimento de um assistente pessoal em português brasileiro, com Qwen3 executado localmente pelo Ollama, um programa Python no terminal e duas ferramentas: calculadora e leitura de texto em uma pasta permitida.
+O objetivo é preparar o desenvolvimento de um assistente pessoal em português brasileiro, com Qwen3 executado localmente pelo Ollama, um programa Python no terminal e uma ferramenta de leitura de texto na pasta em que o Guará iniciar, com autorização explícita para cada leitura externa. A calculadora foi retirada do escopo pelo responsável em 17 de outubro de 2026.
 
 Os itens marcados foram confirmados pelo responsável pelo projeto ou verificados localmente, conforme os registros de cada seção. Os demais representam trabalho pendente ou verificações ainda não registradas; não indicam necessariamente ausência de configuração.
 
@@ -232,32 +232,42 @@ Os módulos Python foram retirados da raiz e organizados em `guara/`: `cli.py` e
 
 A entrada do pacote é `.venv/Scripts/python.exe -m guara`, executada na raiz. O comando global `guara` usa `scripts/iniciar_guara.py`, que localiza o pacote sem depender da pasta atual. O instalador e o lançador já instalado foram atualizados. Imports e alvos de substituição dos testes foram ajustados sem mudar contratos da conversa ou os parâmetros do modelo. O comando global foi validado a partir da pasta temporária do Windows com `--help` e `/sair` no modo simples; as evidências e benchmarks anteriores foram preservados.
 
-## 5. Especificar e testar as duas ferramentas
+## 5. Especificar e testar a ferramenta de arquivos
 
-- [ ] Definir as operações aceitas pela calculadora e seus argumentos.
-- [ ] Prever divisão por zero e entradas inválidas, sem executar texto arbitrário como código.
-- [ ] Escolher a pasta permitida para leitura.
-- [ ] Criar arquivos de teste sem dados pessoais nessa pasta.
-- [ ] Definir formatos aceitos, codificação e tamanho máximo dos arquivos.
-- [ ] Garantir que caminhos resolvidos permaneçam dentro da pasta permitida.
-- [ ] Definir os contratos das ferramentas e validar os argumentos no Python.
-- [ ] Fazer uma prova mínima de chamada de ferramenta com Qwen3-1.7B.
-- [ ] Confirmar o fluxo completo: solicitação pelo modelo, execução pelo Python, retorno do resultado ao modelo e resposta final.
-- [ ] Limitar o número de chamadas por interação para evitar ciclos.
+Etapa concluída em 17 de outubro de 2026. Escopo atualizado por solicitação do responsável: somente leitura de texto, sem calculadora. Os relatos de indisponibilidade da seção 4 descrevem o comportamento anterior e permanecem como histórico.
 
-A prova de integração deve ocorrer cedo. O suporte a ferramentas não garante que o modelo pequeno selecione corretamente a função ou seus argumentos em todas as tarefas. A aplicação deve executar somente as funções cadastradas e validar cada chamada.
+- [x] Remover a calculadora do escopo, contratos e interfaces.
+- [x] Definir a pasta permitida como o diretório de início do terminal, incluindo subpastas, preservado pelo lançador global.
+- [x] Criar arquivos de teste sintéticos, sem dados pessoais, nos testes e na prova real.
+- [x] Definir formatos aceitos, codificação e tamanho máximo dos arquivos.
+- [x] Resolver caminhos e exigir autorização explícita para cada destino externo, inclusive por `..`, caminhos absolutos e links.
+- [x] Validar nome e argumentos no Python e executar somente `ler_arquivo`.
+- [x] Fazer uma prova mínima de chamada de ferramenta com Qwen3-1.7B.
+- [x] Confirmar solicitação pelo modelo, execução pelo Python, retorno do resultado ao modelo e resposta final.
+- [x] Limitar a uma execução de ferramenta e duas chamadas HTTP por interação, sem ciclos.
+- [x] Testar aprovação, recusa, código inválido, cancelamento, formatos, limites e fatos da sessão.
+
+Contrato: `ler_arquivo(caminho: str)`. Texto UTF-8 com ou sem BOM, até 4.096 bytes e 2.400 caracteres. Extensões: `.txt`, `.md`, `.csv`, `.json`, `.log`, `.py`, `.yaml`, `.yml`, `.toml` e `.ini`. Recusar arquivo ausente, diretório, formato não aceito, binário, codificação inválida ou limites excedidos, sem corte silencioso. Não há escrita, exclusão, listagem de pastas ou execução. Caminhos de rede, dispositivos, fluxos alternativos e hard links são recusados; o destino do arquivo aberto é conferido antes da leitura.
+
+A pasta inicial é capturada uma vez por sessão. Um destino externo gera pedido com caminho resolvido e código aleatório, sem ler o conteúdo: `/permitir CODIGO` autoriza somente aquela leitura; `/negar CODIGO` recusa. Uma nova mensagem, `/limpar` ou `/conversar` cancela o pedido. Códigos antigos não podem ser reutilizados. O modelo não tem ferramenta para conceder permissão. A execução autorizada revalida o destino, e as permissões do Windows continuam em vigor.
+
+A API recebe o contrato em `tools`; o resultado real volta como mensagem `tool` antes da resposta final. A segunda chamada não oferece ferramentas, e pedidos adicionais são recusados. O retorno da leitura leva apenas sistema, pedido atual, chamada e resultado, sem acumular o histórico anterior. O contexto permanece em 2.048 tokens, sem contagem exata por caracteres. Sem chamada de leitura, respostas de arquivo reconhecidas são substituídas por aviso do Python. O reconhecimento de linguagem natural permanece conservador.
+
+Prova real: `.venv/Scripts/python.exe scripts/validar_arquivos.py`, com três casos sintéticos aprovados. Leitura local: resposta com `Aurora`, uma leitura e duas chamadas HTTP, em 7,41 s. Acesso externo negado: nenhuma leitura e uma chamada HTTP, em 4,56 s. Acesso externo autorizado: nenhuma leitura antes da aprovação, depois uma leitura e duas chamadas HTTP, com `LARANJA-42` na resposta, em 7,33 s. Evidência selecionada: [arquivos-20261017.json](avaliacoes/arquivos-20261017.json). A prova automatizou a autorização apenas para o arquivo sintético que ela criou. Os resultados locais ficam em `resultados/`. Os 58 testes automatizados passaram, incluindo autorização por entrada real do terminal e renderização nos três tamanhos. A suíte cobre também permissões, links, limites, retomada e memória factual; não representa os 20 casos completos do MVP.
+
+A verificação adicional da CLI real encontrou `2 + 2 = 4.` quando o pedido exigia somente `4`. As instruções do Python e do `Modelfile` foram reforçadas para não acrescentar equação, explicação ou Markdown nesse formato; `guara1` foi recriado. A repetição com `.venv/Scripts/python.exe scripts/validar_cli.py --real` retornou `4` e preservou a primeira mensagem factual. O script passou a salvar o relatório mesmo quando o formato falha, mantendo código de saída não zero. [Registro da falha e da correção](avaliacoes/regressao-formato-20261017.json). A prova de arquivos foi repetida com a configuração final e os três cenários passaram.
 
 ## 6. Preparar a avaliação antes de desenvolver
 
 - [ ] Escrever cinco casos de conversa e instruções em português brasileiro.
 - [ ] Escrever cinco problemas com respostas conhecidas.
 - [ ] Escrever cinco exercícios pequenos de código.
-- [ ] Escrever cinco tarefas com ferramentas.
+- [x] Escrever cinco tarefas com a ferramenta de arquivos em `checks.json` (a avaliação completa continua pendente).
 - [ ] Registrar a resposta esperada ou o critério de aprovação de cada caso.
-- [ ] Incluir nas tarefas com ferramentas uma tentativa de leitura fora da pasta permitida e argumentos inválidos.
+- [x] Incluir nas tarefas com ferramentas uma tentativa de leitura fora da pasta permitida e argumentos inválidos.
 - [ ] Preparar o registro de sucesso, falha e tempo aproximado.
 - [ ] Definir como distinguir limitações do modelo de erros da integração.
-- [ ] Documentar o critério de conclusão: iniciar o programa, manter contexto, executar as duas ferramentas e repetir a avaliação sem erros que impeçam o uso.
+- [ ] Documentar o critério de conclusão: iniciar o programa, manter contexto, executar a leitura e conferir a autorização externa, além de repetir a avaliação sem erros que impeçam o uso.
 
 Conferir respostas de problemas, executar o código quando possível e verificar a operação real das ferramentas. Os 20 casos avaliam a utilidade pessoal do MVP; não demonstram superioridade geral sobre outros modelos.
 
@@ -269,7 +279,7 @@ Conferir respostas de problemas, executar o código quando possível e verificar
 4. Implementar uma conversa mínima em Python.
 5. Implementar e conferir a interface de terminal da seção 4.1, preservando o núcleo validado.
 6. Validar uma chamada de ferramenta antes de ampliar a aplicação.
-7. Completar o histórico e a segunda ferramenta.
+7. Conferir a leitura de arquivos e a autorização externa com o histórico curto.
 8. Executar os 20 casos e documentar como iniciar o programa e suas limitações.
 
 Qwen3-4B fica para comparação posterior, caso o desempenho permita. Interface gráfica, nuvem, banco dedicado, CI/CD e treinamento não são dependências deste MVP. LoRA/QLoRA só será avaliado após identificar uma necessidade concreta que instruções ou correções na aplicação não resolvam.

@@ -36,6 +36,7 @@ async def capture(rows, columns, real, sample=False):
     with create_pipe_input() as pipe:
         output = SizedOutput(rows, columns)
         ui = TerminalUI(Conversation(), input=pipe, output=output)
+        validation_errors = []
         task = asyncio.create_task(ui.application.run_async())
         try:
             await wait_until(lambda: ui.application.renderer.last_rendered_screen is not None)
@@ -48,7 +49,8 @@ async def capture(rows, columns, real, sample=False):
                 await wait_until(lambda: ui.conversation.facts.counts["model"] == 1 and not ui.busy)
                 pipe.send_text("Qual foi minha primeira mensagem?\r")
                 await wait_until(lambda: ui.conversation.facts.counts["session_fact"] == 1 and not ui.busy)
-                assert "\n4\n" in ui.transcript.text
+                if "\n4\n" not in ui.transcript.text:
+                    validation_errors.append("A resposta real a 2 + 2 não foi exatamente 4.")
             ui.application.invalidate()
             await asyncio.sleep(0.15)
             screen = ui.application.renderer.last_rendered_screen
@@ -69,6 +71,7 @@ async def capture(rows, columns, real, sample=False):
             return {"rows": rows, "columns": columns, "screen": lines,
                     "transcript": ui.transcript.text, "real_ollama": real,
                     "synthetic_sample": sample, "background_regions": backgrounds,
+                    "validation_errors": validation_errors,
                     "input_height": ui.editor.window.render_info.window_height}
         finally:
             ui.application.exit()
@@ -90,10 +93,12 @@ async def main(real, sample=False):
         print("\n{} × {}".format(item["columns"], item["rows"]))
         print("\n".join("{:02d} {}".format(i, line) for i, line in enumerate(item["screen"])))
 
+    return 1 if any(item["validation_errors"] for item in report["captures"]) else 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--real", action="store_true", help="Fazer uma chamada real ao Ollama na captura 80×24.")
     parser.add_argument("--amostra", action="store_true", help="Mostrar mensagens sintéticas e entrada com três linhas.")
     args = parser.parse_args()
-    asyncio.run(main(args.real, args.amostra))
+    raise SystemExit(asyncio.run(main(args.real, args.amostra)))

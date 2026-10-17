@@ -8,8 +8,9 @@ from guara.core.capabilities import normalize
 
 class SessionFacts:
     def __init__(self):
+        self.file_reads = 0
         self.first_message = None
-        self.counts = {kind: 0 for kind in ("model", "file_unavailable", "session_fact", "error")}
+        self.counts = {kind: 0 for kind in ("model", "file_unavailable", "session_fact", "error", "access_request")}
 
     def record(self, prompt, kind):
         if kind not in self.counts:
@@ -40,7 +41,7 @@ class SessionFacts:
                 "Até sua mensagem anterior, o registro desta sessão contém: "
                 "{} resposta(s) do modelo, {} pedido(s) de arquivo recusado(s), "
                 "{} resposta(s) local(is) sobre a sessão e {} falha(s) de integração. "
-                "Nenhum arquivo foi lido e nenhuma ferramenta foi executada."
+                "Leituras de arquivo concluídas pela ferramenta: {}. Pedidos de autorização externa: {}."
             ).format(self.counts["model"], self.counts["file_unavailable"],
-                     self.counts["session_fact"], self.counts["error"])
+                     self.counts["session_fact"], self.counts["error"], self.file_reads, self.counts["access_request"])
         return None
