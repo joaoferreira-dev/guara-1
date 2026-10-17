@@ -1,6 +1,6 @@
 # OrbeIA — Guará 1: checklist de preparação do MVP
 
-Atualizado em 16 de outubro de 2026.
+Atualizado em 17 de outubro de 2026.
 
 Base: [Plano do MVP](OrbeIA-Guara-1-plano-MVP.md).
 
@@ -132,7 +132,7 @@ O fluxo previsto é editar no ThinkPad, testar localmente, fazer commit e enviar
 
 ## 4. Fechar as decisões mínimas da aplicação
 
-Decisões iniciais definidas e conversa mínima implementada em 16 de outubro de 2026. O responsável aprovou `think: false` após comparar as duas rodadas.
+Etapa concluída em 17 de outubro de 2026, conforme confirmação do responsável, incluindo a interface de terminal da seção 4.1. Decisões iniciais definidas e conversa mínima implementada em 16 de outubro de 2026. O responsável aprovou `think: false` após comparar as duas rodadas.
 
 - [x] Escrever as instruções do Guará 1: identidade, português brasileiro, estilo de resposta e comportamento diante de incerteza.
 - [x] Definir limites iniciais de contexto, histórico e tamanho das respostas.
@@ -178,7 +178,7 @@ Verificação em 16 de outubro de 2026: 26 testes passaram, incluindo preservaç
 
 ## 4.1. Interface de terminal estruturada
 
-Incluída por solicitação do responsável para oferecer entrada fixa na parte inferior, respostas no corpo e identificação do modelo no canto inferior esquerdo. A implementação permanece neste repositório.
+Etapa concluída em 17 de outubro de 2026, conforme confirmação do responsável. Incluída por solicitação do responsável para oferecer entrada fixa na parte inferior, respostas no corpo e identificação do modelo no canto inferior esquerdo. A implementação permanece neste repositório.
 
 - [x] Separar o desenho da tela do núcleo de conversa, compartilhando memória, comandos e erros.
 - [x] Implementar tela cheia com campo de mensagem fixo e área de conversa com rolagem.
@@ -188,17 +188,17 @@ Incluída por solicitação do responsável para oferecer entrada fixa na parte 
 - [x] Permitir saída por Ctrl+C ou `/sair`, inclusive durante a espera.
 - [x] Preservar modo simples com `--texto` e para entrada/saída redirecionada.
 - [x] Verificar renderização em 80×24, 120×36 e 40×12 e executar uma chamada real na interface.
-- [ ] Conferir manualmente aparência, fonte, colagem e atalhos na janela de terminal usada pelo responsável.
+- [x] Conferir manualmente aparência, fonte, colagem e atalhos na janela de terminal usada pelo responsável (conclusão informada pelo responsável em 17 de outubro de 2026).
 
 Implementação: `terminal_ui.py` usa prompt_toolkit 3.0.52, registrado em `requirements.txt` e instalado no `.venv` com Python 3.9.13. `app.py` oferece o núcleo `Conversation` usado pelas duas interfaces. A entrada cresce conforme o texto, até oito linhas ou o espaço disponível, com respiro vertical e marcador centralizado. PgUp/PgDn e roda do mouse rolam a conversa; Ctrl+End volta ao final. A área visual mantém até 40.000 caracteres em memória. O contexto do modelo e os fatos da sessão continuam separados dessa área visual. Respostas aparecem completas, sem streaming. O modelo exibido é o configurado; ainda não há seletor. A saída durante espera não garante cancelamento da geração no Ollama.
 
-Verificação: testes reais de teclado e renderizador com entrada por pipe validaram posições do rodapé e campo, quebra de linha, envio, recusa de leitura, retomada, limpeza, rolagem e Ctrl+C durante uma espera simulada. A primeira verificação identificou que o campo crescia para quatro linhas; sua altura foi fixada em duas e os testes passaram. O script `.venv/Scripts/python.exe scripts/validar_cli.py --real` fez uma chamada ao Ollama, obteve `4` para `2 + 2` e recuperou a primeira mensagem pelo núcleo factual. A [evidência revisada](avaliacoes/cli-terminal-20261016.json) contém grades do renderizador; não são screenshots de uma janela Windows Terminal. A verificação visual manual permanece pendente. Essa etapa não habilita ferramentas nem conclui os 20 casos do MVP.
+Verificação: testes reais de teclado e renderizador com entrada por pipe validaram posições do rodapé e campo, quebra de linha, envio, recusa de leitura, retomada, limpeza, rolagem e Ctrl+C durante uma espera simulada. A primeira verificação identificou que o campo crescia para quatro linhas; sua altura foi fixada em duas e os testes passaram. O script `.venv/Scripts/python.exe scripts/validar_cli.py --real` fez uma chamada ao Ollama, obteve `4` para `2 + 2` e recuperou a primeira mensagem pelo núcleo factual. A [evidência revisada](avaliacoes/cli-terminal-20261016.json) contém grades do renderizador; não são screenshots de uma janela Windows Terminal. A conclusão da conferência manual foi informada pelo responsável em 17 de outubro de 2026. Essa etapa não habilita ferramentas nem conclui os 20 casos do MVP.
 
 ### Ajustes visuais solicitados pelo responsável
 
 Removido o fundo próprio da tela para preservar o fundo configurado no terminal. O destaque de fundo ficou restrito à caixa de entrada e às mensagens do usuário, com a mesma cor. Os nomes de remetente foram removidos das mensagens exibidas; a origem continua registrada internamente para os fatos da sessão. A caixa agora cresce com novas linhas e quebras automáticas, até oito linhas ou o espaço disponível. O marcador `>` foi separado da edição e centralizado verticalmente entre linhas de respiro.
 
-Verificação: testes do renderizador confirmam fundo padrão fora das mensagens, cores iguais na entrada e mensagem enviada, ausência de rótulos, expansão e contração da caixa, posição do marcador e rodapé preservado. A captura com `.venv/Scripts/python.exe scripts/validar_cli.py --amostra` usa mensagens sintéticas e entrada de três linhas, sem executar o modelo; em 40×12 o campo respeita o espaço disponível. Evidência revisada: [cli-ajustes-visuais-20261016.json](avaliacoes/cli-ajustes-visuais-20261016.json). A aparência na janela real do responsável continua sujeita à conferência manual.
+Verificação: testes do renderizador confirmam fundo padrão fora das mensagens, cores iguais na entrada e mensagem enviada, ausência de rótulos, expansão e contração da caixa, posição do marcador e rodapé preservado. A captura com `.venv/Scripts/python.exe scripts/validar_cli.py --amostra` usa mensagens sintéticas e entrada de três linhas, sem executar o modelo; em 40×12 o campo respeita o espaço disponível. Evidência revisada: [cli-ajustes-visuais-20261016.json](avaliacoes/cli-ajustes-visuais-20261016.json). A conferência da aparência na janela real foi dada como concluída pelo responsável em 17 de outubro de 2026.
 
 ### Marcador nas mensagens e indicação de atividade
 

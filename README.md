@@ -66,7 +66,7 @@ Para usar o formato simples anterior:
 .venv/Scripts/python.exe -m guara --texto
 ```
 
-Entrada ou saída redirecionada usa automaticamente o modo simples. Ambos os modos compartilham o mesmo núcleo de conversa, memória e tratamento de erros. A [validação da CLI](docs/avaliacoes/cli-terminal-20261016.json) contém capturas do renderizador em três tamanhos e uma chamada real ao Ollama; a aparência na janela e fonte usadas no computador ainda requer conferência manual.
+Entrada ou saída redirecionada usa automaticamente o modo simples. Ambos os modos compartilham o mesmo núcleo de conversa, memória e tratamento de erros. A [validação da CLI](docs/avaliacoes/cli-terminal-20261016.json) contém capturas do renderizador em três tamanhos e uma chamada real ao Ollama; a conferência manual na janela e fonte usadas no computador foi dada como concluída pelo responsável em 17 de outubro de 2026, encerrando a etapa 4 do checklist.
 
 No Windows, o adaptador usa o leitor de eventos nativos para preservar o modificador de Shift+Enter, inclusive quando o console oferece entrada VT. Também reconhece sequências VT que informam o modificador e a sequência ESC + CR enviada pelo atalho Shift+Enter configurado no Windows Terminal. Alt+Enter também insere nova linha se o terminal enviar essa mesma sequência. Se o terminal enviar Shift+Enter como Enter comum, sem essa informação, use Ctrl+J para inserir a nova linha.
 
